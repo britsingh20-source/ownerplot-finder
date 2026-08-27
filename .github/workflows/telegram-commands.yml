@@ -19,8 +19,7 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
-      GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
       ALLOWED_PUBLIC_DOMAINS: ${{ vars.ALLOWED_PUBLIC_DOMAINS }}
     steps:
       - uses: actions/checkout@v4
