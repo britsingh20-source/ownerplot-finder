@@ -9,7 +9,7 @@ from pathlib import Path
 import httpx
 
 from .authorized_contacts import capture_contact, credit_status, enrich_authorized_contacts, parse_capture_command
-from .collectors import DirectPublicFeedCollector, TavilyPublicWebCollector, YouTubePublicSearchCollector
+from .collectors import DirectPublicFeedCollector, FacebookPublicPageCollector, TavilyPublicWebCollector, YouTubePublicSearchCollector
 from .processing import correlate_public_contacts, deduplicate, fingerprint
 from .query import parse_query
 from .service import SearchService, format_results
@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 STATE_PATH = ROOT / "data" / "state.json"
 LOCALITIES_PATH = ROOT / "config" / "coimbatore-localities.txt"
 DISCOVERY_PROFILES=("public_contacts","portals","local_sites")
-PROFILES=("direct_sources","youtube_public")+DISCOVERY_PROFILES
+PROFILES=("direct_sources","facebook_public","youtube_public")+DISCOVERY_PROFILES
 _DIRECT_COLLECTOR=None
 
 
@@ -43,6 +43,8 @@ def service_from_environment(profile: str) -> SearchService:
         collector=_DIRECT_COLLECTOR
     elif profile=="youtube_public":
         collector=YouTubePublicSearchCollector.from_environment()
+    elif profile=="facebook_public":
+        collector=FacebookPublicPageCollector.from_environment()
     else:
         collector=TavilyPublicWebCollector.from_environment(profile=profile)
     if collector is None:
@@ -98,6 +100,8 @@ async def scan(localities: list[str], notify: bool = True, rotate: bool = False,
         total=len(localities)*len(DISCOVERY_PROFILES)
         cursor=int(state.get("scan_cursor",0))%total
         jobs=[(locality,("direct_sources",)) for locality in localities]
+        if os.environ.get("META_ACCESS_TOKEN","").strip() and os.environ.get("FACEBOOK_PAGE_IDS","").strip():
+            jobs.append((localities[cursor//len(DISCOVERY_PROFILES)],("facebook_public",)))
         if os.environ.get("YOUTUBE_API_KEY","").strip():
             jobs.append((localities[cursor//len(DISCOVERY_PROFILES)],("youtube_public",)))
         jobs.append((localities[cursor//len(DISCOVERY_PROFILES)],(DISCOVERY_PROFILES[cursor%len(DISCOVERY_PROFILES)],)))

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio, ipaddress, os, re, socket
+from io import BytesIO
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
@@ -13,6 +14,11 @@ try:
     import httpx
 except ModuleNotFoundError:  # Parser tests can run before project dependencies are installed.
     httpx = None
+try:
+    from PIL import Image
+    import pytesseract
+except ModuleNotFoundError:  # OCR is optional during parser-only unit tests.
+    Image = pytesseract = None
 from .domain import Listing, SearchQuery
 
 
@@ -180,6 +186,26 @@ async def _enrich_youtube_descriptions(listings,client):
     return listings
 
 
+def _facebook_image_allowed(url):
+    parsed=urlparse(url)
+    host=(parsed.hostname or "").lower()
+    return parsed.scheme=="https" and (host=="facebook.com" or host.endswith(".facebook.com") or host=="fbcdn.net" or host.endswith(".fbcdn.net"))
+
+
+async def _facebook_image_text(client,url):
+    """OCR a public Meta-hosted image in memory; never stores the image."""
+    if not url or not _facebook_image_allowed(url) or Image is None or pytesseract is None: return ""
+    try:
+        response=await client.get(url)
+        response.raise_for_status()
+        if len(response.content)>5_000_000 or not response.headers.get("content-type","").lower().startswith("image/"): return ""
+        with Image.open(BytesIO(response.content)) as image:
+            image.thumbnail((2000,2000))
+            return pytesseract.image_to_string(image,config="--psm 11")[:10_000]
+    except (httpx.HTTPError,OSError,ValueError):
+        return ""
+
+
 def _public_ip(host):
     try: addresses=socket.getaddrinfo(host,None)
     except socket.gaierror: return False
@@ -293,6 +319,54 @@ class YouTubePublicSearchCollector:
             phone=_phone(text)
             output.append(Listing(source="youtube.com",source_id=video_id,url=f"https://www.youtube.com/watch?v={video_id}",title=title or "Public property video",description=text,locality=query.locality,property_type="plot",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|direct owner|no brokerage|individual)\b",text,re.I) else None,original_posted_at=posted,date_confidence=confidence,date_status="verified_recent" if posted else "unverified",evidence=["Official YouTube keyword search",evidence]+(["Contact visibly published in public YouTube metadata"] if phone else [])))
         return await _enrich_youtube_descriptions(output,self.client)
+
+
+class FacebookPublicPageCollector:
+    """Read recent public Page posts through Meta's official Graph API."""
+    source_id="facebook_public_pages"
+
+    def __init__(self,access_token,page_ids,api_version="v26.0",client=None):
+        if httpx is None: raise RuntimeError("Install project dependencies before enabling Facebook search")
+        self.access_token=access_token
+        self.page_ids=[value.strip() for value in page_ids if value.strip()]
+        self.api_version=api_version.strip().lstrip("/") or "v26.0"
+        self.client=client or httpx.AsyncClient(timeout=30,follow_redirects=True,headers={"User-Agent":"OwnerPlotFinder/0.4"})
+
+    @classmethod
+    def from_environment(cls):
+        token=os.getenv("META_ACCESS_TOKEN","").strip()
+        page_ids=[value.strip() for value in os.getenv("FACEBOOK_PAGE_IDS","").split(",") if value.strip()]
+        return cls(token,page_ids,os.getenv("META_GRAPH_API_VERSION","v26.0")) if token and page_ids else None
+
+    async def _page_posts(self,page_id,cutoff):
+        response=await self.client.get(f"https://graph.facebook.com/{self.api_version}/{page_id}/published_posts",params={"access_token":self.access_token,"fields":"id,message,created_time,permalink_url,full_picture,attachments{title,description,url}","since":int(cutoff.timestamp()),"limit":100})
+        if response.is_error:
+            try: detail=response.json().get("error",{}).get("message") or response.text[:300]
+            except ValueError: detail="unknown Meta Graph API error"
+            raise RuntimeError(f"Meta Graph API failed for Page {page_id} ({response.status_code}): {detail}")
+        return response.json().get("data",[])
+
+    async def search(self,query):
+        cutoff=datetime.now(timezone.utc)-timedelta(days=query.max_age_days)
+        batches=await asyncio.gather(*(self._page_posts(page_id,cutoff) for page_id in self.page_ids),return_exceptions=True)
+        output=[]
+        for page_id,batch in zip(self.page_ids,batches):
+            if isinstance(batch,BaseException): continue
+            for post in batch:
+                attachment=post.get("attachments",{}).get("data",[])
+                attachment_text=" ".join(f"{item.get('title','')} {item.get('description','')}" for item in attachment)
+                text=f"{post.get('message','')} {attachment_text}".strip()
+                if query.locality.lower() not in text.lower() or not re.search(r"\b(plot|land|site|residential)\b",text,re.I): continue
+                image_text=await _facebook_image_text(self.client,post.get("full_picture"))
+                public_text=f"{text} {image_text}".strip()
+                posted,confidence,date_evidence=_original_post_date(public_text,post.get("created_time"))
+                if posted and posted<cutoff: continue
+                phone=_phone(public_text)
+                evidence=["Official Meta Graph API public Page post",date_evidence,"Exact Facebook permalink retained"]
+                if phone: evidence.append("Contact visibly published in Facebook caption, attachment metadata or public image")
+                if image_text: evidence.append("Public Facebook image processed with in-memory OCR")
+                output.append(Listing(source="facebook.com",source_id=post.get("id") or post.get("permalink_url") or f"{page_id}:{len(output)}",url=post.get("permalink_url") or f"https://www.facebook.com/{post.get('id','')}",title=(post.get("message") or "Public Facebook property post")[:160],description=public_text[:20_000],locality=query.locality,property_type="plot",price=_price(public_text),area_sqft=_area(public_text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|direct owner|no brokerage|individual)\b",public_text,re.I) else None,original_posted_at=posted,date_confidence=confidence,date_status="verified_recent" if posted else "unverified",evidence=evidence))
+        return output
 
 
 class TavilyPublicWebCollector:

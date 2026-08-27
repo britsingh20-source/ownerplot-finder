@@ -13,6 +13,8 @@ dependencies = [
   "asyncpg>=0.29,<1",
   "PyYAML>=6,<7",
   "cryptography>=43,<47",
+  "Pillow>=11,<13",
+  "pytesseract>=0.3.13,<1",
   "uvicorn[standard]>=0.30,<1"
 ]
 

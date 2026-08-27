@@ -85,6 +85,20 @@ Add the existing `YOUTUBE_API_KEY` as a GitHub Actions secret in this repository
 
 On-demand `/plots <locality>` searches include recent YouTube keyword discovery for that locality. Scheduled monitoring searches one rotating Coimbatore locality each hour to conserve YouTube API quota while continuing zero-credit direct-source scans across all configured localities.
 
+### Public Facebook Page contacts
+
+OwnerPlot Finder can read recent public Page posts through Meta's official Graph API, extract public caption/WhatsApp numbers, and OCR phone numbers visibly printed on Meta-hosted public images. It does not access private groups, private profiles, hidden contacts, or login-restricted content.
+
+Configure:
+
+```text
+GitHub secret: META_ACCESS_TOKEN
+GitHub variable: FACEBOOK_PAGE_IDS=page_id_one,page_id_two
+GitHub variable: META_GRAPH_API_VERSION=v26.0
+```
+
+The token/app must have the access Meta requires for the selected public Pages. Add only reviewed Coimbatore property Pages. A visible number remains a candidate until property matching and seller-history analysis distinguish probable owners from brokers.
+
 A social-media contact is attached to a 99acres or MagicBricks owner-labelled record only when locality, plot area (within 3%), and price (within 5%) match. The evidence stores both source URLs and a match score. Numbers from high-volume brokers/builders remain rejected; hidden portal contacts remain reveal-only.
 
 ## Local quick start

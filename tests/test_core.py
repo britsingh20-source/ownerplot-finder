@@ -12,7 +12,7 @@ from ownerplot.domain import Listing, SellerType
 from ownerplot.policy import enforce_contact_policy
 from ownerplot.processing import analyze_seller_history, classify_seller, correlate_public_contacts, deduplicate, normalize_phone, validate_locality
 from ownerplot.query import parse_query
-from ownerplot.collectors import YouTubePublicSearchCollector, _area, _enrich_youtube_descriptions, _original_post_date, _phone, _price, _xml_entries, _youtube_video_id
+from ownerplot.collectors import FacebookPublicPageCollector, YouTubePublicSearchCollector, _area, _enrich_youtube_descriptions, _original_post_date, _phone, _price, _xml_entries, _youtube_video_id
 from datetime import datetime, timezone
 from ownerplot.cache import WatchStore
 
@@ -151,6 +151,23 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(results[0].phone_public)
         self.assertEqual(results[0].url,"https://www.youtube.com/watch?v=search999")
         self.assertIn("Kalapatti Coimbatore",client.search_params["q"])
+
+    def test_facebook_public_page_caption_contact(self):
+        class Response:
+            is_error=False
+            status_code=200
+            text=""
+            def json(self):
+                return {"data":[{"id":"page_101","message":"Kalapatti residential plot 4 cents direct owner call +91 92345 67890","created_time":"2026-08-26T10:00:00+0000","permalink_url":"https://www.facebook.com/example/posts/101"}]}
+        class Client:
+            async def get(self,*args,**kwargs): return Response()
+        collector=FacebookPublicPageCollector("test-token",["example"],client=Client())
+        results=asyncio.run(collector.search(parse_query("plots in Kalapatti")))
+        self.assertEqual(len(results),1)
+        self.assertEqual(results[0].phone,"9234567890")
+        self.assertTrue(results[0].phone_public)
+        self.assertEqual(results[0].source,"facebook.com")
+        self.assertIn("Official Meta Graph API",results[0].evidence[0])
 
     def test_public_contact_cross_source_match(self):
         portal=listing(source="magicbricks.com",url="https://www.magicbricks.com/propertyDetails/example",phone=None,phone_public=False,seller_claim="contact owner",title="East plot near SVB Tech Park",description="Kalapatti 1500 sqft price 44.5 lakh",price=4_450_000,area_sqft=1500)
