@@ -95,7 +95,7 @@ class GooglePublicWebCollector:
         except httpx.HTTPError: return False
 
     async def search(self,query):
-        terms=f'"{query.locality}" (plot OR land OR "house site") (owner OR "no brokerage") Coimbatore'
+        terms=f'"{query.locality}" (plot OR land OR "house site") Coimbatore'
         response=await self.client.get("https://www.googleapis.com/customsearch/v1",params={"key":self.api_key,"cx":self.cse_id,"q":terms,"num":10})
         response.raise_for_status(); output=[]
         for item in response.json().get("items",[]):
