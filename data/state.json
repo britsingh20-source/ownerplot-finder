@@ -1,35 +1,77 @@
 {
   "baselined": [
+    "Annur|direct_sources",
+    "Chinnavedampatti|direct_sources",
+    "Civil Aerodrome|direct_sources",
+    "Eachanari|direct_sources",
+    "Ganapathy|direct_sources",
+    "Irugur|direct_sources",
+    "Kalapatti|direct_sources",
     "Kalapatti|local_sites",
     "Kalapatti|portals",
-    "Kalapatti|public_contacts"
+    "Kalapatti|public_contacts",
+    "Karamadai|direct_sources",
+    "Keeranatham|direct_sources",
+    "Kinathukadavu|direct_sources",
+    "Kovaipudur|direct_sources",
+    "Kovilpalayam|direct_sources",
+    "Kuniyamuthur|direct_sources",
+    "Kurumbapalayam|direct_sources",
+    "Madukkarai|direct_sources",
+    "Malumichampatti|direct_sources",
+    "Mettupalayam|direct_sources",
+    "NGGO Colony|direct_sources",
+    "Nadupalayam|direct_sources",
+    "Neelambur|direct_sources",
+    "Nehru Nagar|direct_sources",
+    "Ondipudur|direct_sources",
+    "Othakalmandapam|direct_sources",
+    "Pannimadai|direct_sources",
+    "Papampatti|direct_sources",
+    "Pattanam|direct_sources",
+    "Peelamedu|direct_sources",
+    "Perur|direct_sources",
+    "RS Puram|direct_sources",
+    "Race Course|direct_sources",
+    "SITRA|direct_sources",
+    "Saibaba Colony|direct_sources",
+    "Saravanampatti|direct_sources",
+    "Singanallur|direct_sources",
+    "Somayampalayam|direct_sources",
+    "Sulur|direct_sources",
+    "Thudiyalur|direct_sources",
+    "Vadavalli|direct_sources",
+    "Veerappandi|direct_sources",
+    "Vellakinar|direct_sources",
+    "Vilankurichi|direct_sources"
   ],
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
     "locality": "Kalapatti",
+    "probable_owners": 7,
     "profiles": [
-      "public_contacts",
-      "portals",
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 16,
+    "public_contacts": 11,
     "sources": [
-      "99acres.com",
-      "adissia.com",
       "facebook.com",
-      "housing.com",
       "instagram.com",
-      "magicbricks.com",
-      "olx.in",
-      "srisasthabuilders.com",
       "youtube.com"
     ],
-    "unique_listings": 26
+    "unique_listings": 12,
+    "verified_original_dates": 0,
+    "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 0,
+  "scan_cursor": 1,
   "seen": {
+    "Annur": [],
+    "Chinnavedampatti": [],
+    "Civil Aerodrome": [],
+    "Eachanari": [],
+    "Ganapathy": [],
+    "Irugur": [],
     "Kalapatti": [
       "055604928a2ea40c2fef",
       "09a035ca786076492220",
@@ -75,7 +117,53 @@
       "f8ca07e2653042ebd4a4",
       "f9fc2986ee016a8e3420",
       "fea34170d3aefa0d99d8"
-    ]
+    ],
+    "Karamadai": [],
+    "Keeranatham": [
+      "221bcbde281b2c446db0",
+      "756abe81e1ef91745f13"
+    ],
+    "Kinathukadavu": [],
+    "Kovaipudur": [],
+    "Kovilpalayam": [
+      "5921ceb74303df27bed3"
+    ],
+    "Kuniyamuthur": [],
+    "Kurumbapalayam": [
+      "c5befa08360010b4d645"
+    ],
+    "Madukkarai": [],
+    "Malumichampatti": [],
+    "Mettupalayam": [
+      "9a42eac5ae3170f145a5"
+    ],
+    "NGGO Colony": [],
+    "Nadupalayam": [],
+    "Neelambur": [],
+    "Nehru Nagar": [],
+    "Ondipudur": [],
+    "Othakalmandapam": [],
+    "Pannimadai": [],
+    "Papampatti": [],
+    "Pattanam": [],
+    "Peelamedu": [],
+    "Perur": [],
+    "RS Puram": [],
+    "Race Course": [],
+    "SITRA": [],
+    "Saibaba Colony": [],
+    "Saravanampatti": [
+      "3ca3727b8bf645d6fc8b",
+      "60511ac86432dd0a8d53"
+    ],
+    "Singanallur": [],
+    "Somayampalayam": [],
+    "Sulur": [],
+    "Thudiyalur": [],
+    "Vadavalli": [],
+    "Veerappandi": [],
+    "Vellakinar": [],
+    "Vilankurichi": []
   },
   "telegram_update_offset": 0
 }
