@@ -50,10 +50,14 @@ async def telegram(method: str, payload: dict) -> dict:
         raise RuntimeError("TELEGRAM_BOT_TOKEN is required")
     async with httpx.AsyncClient(timeout=30) as client:
         response = await client.post(f"https://api.telegram.org/bot{token}/{method}", json=payload)
-        response.raise_for_status()
-        body = response.json()
+        try:
+            body = response.json()
+        except ValueError:
+            body = {}
+        if response.is_error:
+            raise RuntimeError(f"Telegram {method} failed ({response.status_code}): {body.get('description', 'unknown error')}")
         if not body.get("ok"):
-            raise RuntimeError(f"Telegram {method} failed")
+            raise RuntimeError(f"Telegram {method} failed: {body.get('description', 'unknown error')}")
         return body
 
 
