@@ -42,6 +42,8 @@ Add repository secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, and `TAVILY_API
 
 MagicBricks, 99acres, NoBroker and Housing are discovery-only: their public listing links and metadata may be returned, but OwnerPlot Finder never treats hidden contact controls as public phone evidence.
 
+Every search applies a strict 90-day Tavily publish/last-updated cutoff. Older pages are excluded before owner classification and Telegram delivery.
+
 ## Local quick start
 
 1. Copy `.env.example` to `.env` and add the Telegram token.
