@@ -1,0 +1,22 @@
+sources:
+  - id: permitted_public_web
+    mode: allowed
+    enabled: false
+    terms_url: ""
+    rate_limit_per_minute: 10
+    contact_rule: openly_published_only
+  - id: magicbricks
+    mode: authorized_only
+    enabled: false
+    terms_url: https://property.magicbricks.com/terms/terms.html
+    contact_rule: authorized_feed_or_manual_import
+  - id: 99acres
+    mode: authorized_only
+    enabled: false
+    terms_url: https://www.99acres.com/info/terms-and-conditions
+    contact_rule: authorized_feed_or_manual_import
+  - id: manual_csv
+    mode: manual_import
+    enabled: true
+    contact_rule: user_supplied_public_listing_data
+
