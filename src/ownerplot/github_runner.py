@@ -54,7 +54,8 @@ async def search_profiles(query,profiles=PROFILES):
     if not successful:
         first=batches[0]
         raise RuntimeError(f"All configured search profiles failed: {first}")
-    return enrich_authorized_contacts(deduplicate([item for batch in successful for item in batch]),load_state())
+    enriched=enrich_authorized_contacts([item for batch in successful for item in batch],load_state())
+    return deduplicate(enriched)
 
 
 def authorized_chat(chat_id: int) -> bool:
