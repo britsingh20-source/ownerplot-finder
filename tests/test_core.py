@@ -20,6 +20,7 @@ class CoreTests(unittest.TestCase):
         query = parse_query("Search owner plots in Kalapatti under 60 lakhs")
         self.assertEqual(query.locality, "Kalapatti")
         self.assertEqual(query.max_price, 6_000_000)
+        self.assertEqual(query.max_age_days, 90)
 
     def test_phone(self):
         self.assertEqual(normalize_phone("+91 98765 43210"), "+919876543210")
