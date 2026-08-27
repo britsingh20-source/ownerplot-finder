@@ -132,15 +132,25 @@ class TavilyPublicWebCollector:
     """Tavily discovery constrained to the reviewed public-domain registry."""
     source_id="tavily_public_web"
 
-    def __init__(self,api_key,allowed_domains,client=None):
+    PROFILES={
+        "public_contacts":({"youtube.com","facebook.com","instagram.com"},"Find public social posts or videos advertising plots or land for sale in {locality}, Coimbatore that visibly publish a direct-owner phone, mobile, call or WhatsApp contact number."),
+        "portals":({"olx.in","quikr.com","commonfloor.com","property.sulekha.com","roofandfloor.com","housing.com","magicbricks.com","99acres.com","nobroker.in"},"Find current plots or land for sale in {locality}, Coimbatore, prioritizing owner-posted or no-brokerage listings and visibly published contact details."),
+        "local_sites":({"adissia.com","greenfieldcoimbatore.com","srisasthabuilders.com","livingspacerealty.com"},"Find current public advertisements for plots or land for sale in {locality}, Coimbatore, including visible phone or WhatsApp contacts and seller identity."),
+    }
+    DISCOVERY_ONLY={"magicbricks.com","99acres.com","nobroker.in","housing.com"}
+
+    def __init__(self,api_key,allowed_domains,profile="public_contacts",client=None):
         if httpx is None:
             raise RuntimeError("Install project dependencies before enabling Tavily search")
         self.api_key=api_key
         self.allowed_domains={d.lower().removeprefix("www.") for d in allowed_domains if d}
+        if profile not in self.PROFILES:
+            raise ValueError(f"Unknown Tavily search profile: {profile}")
+        self.profile=profile
         self.client=client or httpx.AsyncClient(timeout=45,follow_redirects=True,headers={"Authorization":f"Bearer {api_key}","Content-Type":"application/json","User-Agent":"OwnerPlotFinder/0.1"})
 
     @classmethod
-    def from_environment(cls):
+    def from_environment(cls,profile="public_contacts"):
         key=os.getenv("TAVILY_API_KEY","").strip()
         domains={x.strip() for x in os.getenv("ALLOWED_PUBLIC_DOMAINS","").split(",") if x.strip()}
         if not domains:
@@ -150,11 +160,13 @@ class TavilyPublicWebCollector:
                     domains={line.strip() for line in handle if line.strip() and not line.startswith("#")}
             except OSError:
                 pass
-        return cls(key,domains) if key and domains else None
+        return cls(key,domains,profile=profile) if key and domains else None
 
     async def search(self,query):
-        terms=f'Find public advertisements for plots or land for sale in {query.locality}, Coimbatore, prioritizing direct-owner or no-brokerage posts that visibly publish a phone, call, mobile or WhatsApp contact number.'
-        response=await self.client.post("https://api.tavily.com/search",json={"query":terms,"topic":"general","search_depth":"basic","max_results":20,"include_answer":False,"include_raw_content":"text","include_images":False,"include_domains":sorted(self.allowed_domains)})
+        profile_domains,template=self.PROFILES[self.profile]
+        domains=sorted(self.allowed_domains & profile_domains)
+        terms=template.format(locality=query.locality)
+        response=await self.client.post("https://api.tavily.com/search",json={"query":terms,"topic":"general","search_depth":"basic","max_results":20,"include_answer":False,"include_raw_content":"text","include_images":False,"include_domains":domains})
         if response.is_error:
             try:
                 detail=response.json().get("detail") or response.json().get("error") or response.text[:300]
@@ -167,6 +179,8 @@ class TavilyPublicWebCollector:
             if parsed.scheme!="https" or not any(host==d or host.endswith(f".{d}") for d in self.allowed_domains): continue
             text=" ".join(filter(None,[item.get("title",""),item.get("content",""),item.get("raw_content","")]))[:20_000]
             phone=_phone(text)
+            if host in self.DISCOVERY_ONLY:
+                phone=None
             output.append(Listing(source=host or "tavily",source_id=url,url=url,title=item.get("title") or "Public property listing",description=text,locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",text,re.I) else None,evidence=["Contact visibly present in Tavily-extracted public source content"] if phone else ["Public source discovered through Tavily"]))
         return output
 
