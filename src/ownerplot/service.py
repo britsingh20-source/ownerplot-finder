@@ -17,6 +17,10 @@ class SearchService:
         if not force_refresh and self.cache and (cached := self.cache.get(query)) is not None:
             return cached
         batches = await asyncio.gather(*(c.search(query) for c in self.collectors), return_exceptions=True)
+        failures = [batch for batch in batches if isinstance(batch, BaseException)]
+        if failures and len(failures) == len(batches):
+            first = failures[0]
+            raise RuntimeError(f"All search collectors failed: {type(first).__name__}: {first}") from first
         normalized: list[Listing] = []
         for batch in batches:
             if isinstance(batch, BaseException):
