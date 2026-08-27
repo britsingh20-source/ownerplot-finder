@@ -27,7 +27,7 @@ class _TextExtractor(HTMLParser):
 
 PHONE_RE=re.compile(r"(?:\+?91[\s.-]?)?([6-9](?:[\s.-]?\d){9})(?!\d)")
 PRICE_RE=re.compile(r"(?:₹|rs\.?|inr)?\s*([0-9]+(?:\.[0-9]+)?)\s*(crores?|cr|lakhs?|lacs?)", re.I)
-AREA_RE=re.compile(r"([0-9,]+(?:\.[0-9]+)?)\s*(sq\.?\s*ft|sqft|square feet|cents?)", re.I)
+AREA_RE=re.compile(r"([0-9]+(?:,[0-9]{3})*(?:\.[0-9]+)?)\s*(sq\.?\s*ft|sqft|square feet|cents?)", re.I)
 
 
 def _price(text):
