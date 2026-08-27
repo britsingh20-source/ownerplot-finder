@@ -44,6 +44,16 @@ MagicBricks, 99acres, NoBroker and Housing are discovery-only: their public list
 
 Every search applies a strict 90-day Tavily publish/last-updated cutoff. Older pages are excluded before owner classification and Telegram delivery.
 
+## Evidence-based owner verification
+
+Owner labels are not trusted by themselves. Each result records the original public post/update date, date confidence, seller advertisement history, broker-risk score, contact-verification level, and supporting evidence.
+
+- One public advertisement claiming `direct owner` is only `probable_owner_call_to_confirm`.
+- `property_matched_public_contact` requires the same property and public number on at least two different sources.
+- A phone connected to five or more distinct advertisements receives elevated broker risk.
+- Histories containing 25 or more advertisements are classified as broker/promoter even when the text claims direct ownership.
+- Listings with a proven date older than 90 days are excluded. Listings without a provable original date are labelled unverified in Telegram instead of being presented as recent.
+
 ## Local quick start
 
 1. Copy `.env.example` to `.env` and add the Telegram token.
