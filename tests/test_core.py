@@ -3,9 +3,10 @@ import tempfile
 
 from ownerplot.domain import Listing, SellerType
 from ownerplot.policy import enforce_contact_policy
-from ownerplot.processing import classify_seller, deduplicate, normalize_phone, validate_locality
+from ownerplot.processing import analyze_seller_history, classify_seller, deduplicate, normalize_phone, validate_locality
 from ownerplot.query import parse_query
-from ownerplot.collectors import _area, _phone, _price
+from ownerplot.collectors import _area, _original_post_date, _phone, _price
+from datetime import datetime, timezone
 from ownerplot.cache import WatchStore
 
 
@@ -27,7 +28,24 @@ class CoreTests(unittest.TestCase):
 
     def test_owner(self):
         item = classify_seller(listing())
-        self.assertEqual(item.seller_type, SellerType.VERIFIED_OWNER)
+        self.assertEqual(item.seller_type, SellerType.PROBABLE_OWNER)
+        self.assertEqual(item.contact_verification, "probable_owner_call_to_confirm")
+
+    def test_owner_requires_two_source_property_match(self):
+        first=listing(source="one")
+        second=listing(source="two",source_id="2")
+        analyze_seller_history([first,second])
+        self.assertEqual(classify_seller(first).seller_type,SellerType.VERIFIED_OWNER)
+
+    def test_high_volume_owner_claim_is_broker(self):
+        item=listing(description="Direct owner no brokerage 808 items listed")
+        self.assertEqual(classify_seller(item).seller_type,SellerType.BROKER)
+
+    def test_original_post_date(self):
+        now=datetime(2026,8,27,tzinfo=timezone.utc)
+        value,confidence,_=_original_post_date("Posted 3 days ago",now=now)
+        self.assertEqual(value.date().isoformat(),"2026-08-24")
+        self.assertEqual(confidence,80)
 
     def test_private_phone_removed(self):
         item = enforce_contact_policy(listing(phone_public=False))
