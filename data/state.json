@@ -1,6 +1,8 @@
 {
-  "telegram_update_offset": 0,
+  "initialized": true,
   "locality_cursor": 0,
-  "seen": {},
-  "initialized": false
+  "seen": {
+    "Kalapatti": []
+  },
+  "telegram_update_offset": 0
 }
