@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           if [ -n "${{ inputs.locality }}" ]; then
-            python -m ownerplot.github_runner scan --locality "${{ inputs.locality }}"
+            python -m ownerplot.github_runner scan --locality "${{ inputs.locality }}" --report
           else
             python -m ownerplot.github_runner scan
           fi
