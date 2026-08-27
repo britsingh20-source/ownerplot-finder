@@ -1,5 +1,16 @@
 {
   "initialized": true,
+  "last_run": {
+    "locality": "Kalapatti",
+    "public_contacts": 0,
+    "sources": [
+      "commonfloor.com",
+      "olx.in",
+      "property.sulekha.com",
+      "roofandfloor.com"
+    ],
+    "unique_listings": 6
+  },
   "locality_cursor": 0,
   "seen": {
     "Kalapatti": [
