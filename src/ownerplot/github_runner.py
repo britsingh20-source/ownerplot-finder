@@ -76,13 +76,14 @@ async def scan(localities: list[str], notify: bool = True, rotate: bool = False)
     service = service_from_environment()
     discovered = sent = 0
     for locality in localities:
+        first_locality_scan = locality not in state["seen"]
         query = parse_query(f"plots in {locality}")
         results = await service.search(query, force_refresh=True)
         discovered += len(results)
         old = set(state["seen"].get(locality, []))
         keyed = {fingerprint(item): item for item in results}
         new_keys = [key for key in keyed if key not in old]
-        if state["initialized"] and notify and new_keys:
+        if not first_locality_scan and notify and new_keys:
             await send_message("NEW PUBLIC OWNER-PLOT POSTINGS\n\n" + format_results(query, [keyed[key] for key in new_keys]))
             sent += len(new_keys)
         state["seen"][locality] = sorted(old | set(keyed))[-5000:]
