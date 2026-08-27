@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ipaddress, os, re, socket
+from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
@@ -165,8 +166,9 @@ class TavilyPublicWebCollector:
     async def search(self,query):
         profile_domains,template=self.PROFILES[self.profile]
         domains=sorted(self.allowed_domains & profile_domains)
-        terms=template.format(locality=query.locality)
-        response=await self.client.post("https://api.tavily.com/search",json={"query":terms,"topic":"general","search_depth":"basic","max_results":20,"include_answer":False,"include_raw_content":"text","include_images":False,"include_domains":domains})
+        cutoff=(datetime.now(timezone.utc)-timedelta(days=query.max_age_days)).date().isoformat()
+        terms=template.format(locality=query.locality)+f" Only include advertisements posted or updated within the last {query.max_age_days} days."
+        response=await self.client.post("https://api.tavily.com/search",json={"query":terms,"topic":"general","search_depth":"basic","max_results":20,"start_date":cutoff,"include_answer":False,"include_raw_content":"text","include_images":False,"include_domains":domains})
         if response.is_error:
             try:
                 detail=response.json().get("detail") or response.json().get("error") or response.text[:300]
@@ -181,7 +183,9 @@ class TavilyPublicWebCollector:
             phone=_phone(text)
             if host in self.DISCOVERY_ONLY:
                 phone=None
-            output.append(Listing(source=host or "tavily",source_id=url,url=url,title=item.get("title") or "Public property listing",description=text,locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",text,re.I) else None,evidence=["Contact visibly present in Tavily-extracted public source content"] if phone else ["Public source discovered through Tavily"]))
+            evidence=[f"Tavily publish/update filter: last {query.max_age_days} days"]
+            evidence.append("Contact visibly present in Tavily-extracted public source content" if phone else "Public source discovered through Tavily")
+            output.append(Listing(source=host or "tavily",source_id=url,url=url,title=item.get("title") or "Public property listing",description=text,locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",text,re.I) else None,evidence=evidence))
         return output
 
 
