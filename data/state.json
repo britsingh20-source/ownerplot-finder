@@ -1,5 +1,6 @@
 {
   "telegram_update_offset": 0,
+  "locality_cursor": 0,
   "seen": {},
   "initialized": false
 }
