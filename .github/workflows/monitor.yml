@@ -1,9 +1,6 @@
 name: OwnerPlot monitor
 
 on:
-  push:
-    paths:
-      - "config/freshness-test.txt"
   schedule:
     - cron: "27 * * * *"
   workflow_dispatch:
@@ -40,9 +37,7 @@ jobs:
       - name: Scan public owner listings
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            python -m ownerplot.github_runner scan --locality "Kalapatti" --report
-          elif [ -n "${{ inputs.locality }}" ]; then
+          if [ -n "${{ inputs.locality }}" ]; then
             python -m ownerplot.github_runner scan --locality "${{ inputs.locality }}" --report
           else
             python -m ownerplot.github_runner scan
