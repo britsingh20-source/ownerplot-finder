@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import StrEnum
 from typing import Protocol
 
@@ -46,6 +47,13 @@ class Listing:
     seller_type: SellerType = SellerType.UNKNOWN
     owner_confidence: int = 0
     locality_confidence: int = 0
+    original_posted_at: datetime | None = None
+    date_confidence: int = 0
+    date_status: str = "unverified"
+    seller_history_count: int = 0
+    broker_risk: int = 0
+    contact_verification: str = "hidden_contact"
+    matching_contact_sources: int = 0
     evidence: list[str] = field(default_factory=list)
 
 
