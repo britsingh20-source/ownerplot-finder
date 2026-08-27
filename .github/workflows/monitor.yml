@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ownerplot-monitor
+  group: ownerplot-state
   cancel-in-progress: false
 
 jobs:
@@ -27,6 +27,7 @@ jobs:
       GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
       GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
       ALLOWED_PUBLIC_DOMAINS: ${{ vars.ALLOWED_PUBLIC_DOMAINS }}
+      SCAN_BATCH_SIZE: ${{ vars.SCAN_BATCH_SIZE || '4' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
