@@ -97,7 +97,14 @@ class GooglePublicWebCollector:
     async def search(self,query):
         terms=f'"{query.locality}" (plot OR land OR "house site") Coimbatore'
         response=await self.client.get("https://www.googleapis.com/customsearch/v1",params={"key":self.api_key,"cx":self.cse_id,"q":terms,"num":10})
-        response.raise_for_status(); output=[]
+        if response.is_error:
+            try:
+                error=response.json().get("error",{})
+                detail=error.get("message") or error.get("status") or "unknown Google API error"
+            except ValueError:
+                detail="unknown Google API error"
+            raise RuntimeError(f"Google Custom Search API failed ({response.status_code}): {detail}")
+        output=[]
         for item in response.json().get("items",[]):
             url=item.get("link","")
             if not self._allowed_url(url): continue
