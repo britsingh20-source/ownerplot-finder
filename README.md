@@ -38,7 +38,7 @@ Results <- Telegram formatter <- Deduplication <- Normalization
 
 Add repository secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `GOOGLE_CSE_API_KEY`, and `GOOGLE_CSE_ID`. Add the repository variable `ALLOWED_PUBLIC_DOMAINS` as a comma-separated reviewed-domain list. GitHub supplies `GITHUB_TOKEN` automatically.
 
-`monitor.yml` scans the Coimbatore locality registry hourly and alerts only after the first baseline. `telegram-commands.yml` checks Telegram every five minutes, so command replies are normally delayed by up to five minutes.
+`monitor.yml` scans a rotating batch of four Coimbatore localities hourly and alerts only after each locality has a baseline. Set the optional `SCAN_BATCH_SIZE` repository variable to tune quota use. `telegram-commands.yml` checks Telegram every five minutes, so command replies are normally delayed by up to five minutes.
 
 ## Local quick start
 
