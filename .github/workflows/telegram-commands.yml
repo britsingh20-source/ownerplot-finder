@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ownerplot-telegram-commands
+  group: ownerplot-state
   cancel-in-progress: false
 
 jobs:
