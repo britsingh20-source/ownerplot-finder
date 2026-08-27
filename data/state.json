@@ -2,7 +2,14 @@
   "initialized": true,
   "locality_cursor": 0,
   "seen": {
-    "Kalapatti": []
+    "Kalapatti": [
+      "0e40671b03cb701cd0a5",
+      "1d81a0d8c1f3cad49b84",
+      "4c825cf434e8e285b277",
+      "c4ffdf161a2c61e5f444",
+      "e10a8a78155c28fb67b1",
+      "f8ca07e2653042ebd4a4"
+    ]
   },
   "telegram_update_offset": 0
 }
