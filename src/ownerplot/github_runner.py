@@ -10,7 +10,7 @@ import httpx
 
 from .authorized_contacts import capture_contact, credit_status, enrich_authorized_contacts, parse_capture_command
 from .collectors import DirectPublicFeedCollector, TavilyPublicWebCollector
-from .processing import deduplicate, fingerprint
+from .processing import correlate_public_contacts, deduplicate, fingerprint
 from .query import parse_query
 from .service import SearchService, format_results
 
@@ -54,7 +54,8 @@ async def search_profiles(query,profiles=PROFILES):
     if not successful:
         first=batches[0]
         raise RuntimeError(f"All configured search profiles failed: {first}")
-    enriched=enrich_authorized_contacts([item for batch in successful for item in batch],load_state())
+    correlated=correlate_public_contacts([item for batch in successful for item in batch])
+    enriched=enrich_authorized_contacts(correlated,load_state())
     return deduplicate(enriched)
 
 

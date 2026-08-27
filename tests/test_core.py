@@ -2,6 +2,7 @@ import unittest
 import tempfile
 import json
 import os
+import asyncio
 from unittest.mock import patch
 
 from cryptography.fernet import Fernet
@@ -9,9 +10,9 @@ from cryptography.fernet import Fernet
 from ownerplot.authorized_contacts import capture_contact, credit_status, enrich_authorized_contacts, parse_capture_command
 from ownerplot.domain import Listing, SellerType
 from ownerplot.policy import enforce_contact_policy
-from ownerplot.processing import analyze_seller_history, classify_seller, deduplicate, normalize_phone, validate_locality
+from ownerplot.processing import analyze_seller_history, classify_seller, correlate_public_contacts, deduplicate, normalize_phone, validate_locality
 from ownerplot.query import parse_query
-from ownerplot.collectors import _area, _original_post_date, _phone, _price, _xml_entries
+from ownerplot.collectors import _area, _enrich_youtube_descriptions, _original_post_date, _phone, _price, _xml_entries, _youtube_video_id
 from datetime import datetime, timezone
 from ownerplot.cache import WatchStore
 
@@ -112,6 +113,34 @@ class CoreTests(unittest.TestCase):
     def test_capture_command_rejects_unapproved_portal(self):
         with self.assertRaises(ValueError):
             parse_capture_command("/capture https://example.com/property/1 9876543210")
+
+    def test_youtube_id_and_public_description_contact(self):
+        class Response:
+            def raise_for_status(self): pass
+            def json(self):
+                return {"items":[{"id":"abc123","snippet":{"title":"Kalapatti owner plot","description":"Direct owner call +91 98765 43210","publishedAt":"2026-08-26T10:00:00Z","channelTitle":"Owner"}}]}
+        class Client:
+            async def get(self,*args,**kwargs): return Response()
+        item=listing(source="youtube.com",url="https://www.youtube.com/watch?v=abc123",phone=None,phone_public=False)
+        self.assertEqual(_youtube_video_id(item.url),"abc123")
+        with patch.dict(os.environ,{"YOUTUBE_API_KEY":"test-key"},clear=False):
+            enriched=asyncio.run(_enrich_youtube_descriptions([item],Client()))[0]
+        self.assertEqual(enriched.phone,"9876543210")
+        self.assertTrue(enriched.phone_public)
+
+    def test_public_contact_cross_source_match(self):
+        portal=listing(source="magicbricks.com",url="https://www.magicbricks.com/propertyDetails/example",phone=None,phone_public=False,seller_claim="contact owner",title="East plot near SVB Tech Park",description="Kalapatti 1500 sqft price 44.5 lakh",price=4_450_000,area_sqft=1500)
+        social=listing(source="youtube.com",url="https://youtube.com/watch?v=public",title="SVB Tech Park east plot",description="Kalapatti 1500 sqft price 44.5 lakh",price=4_450_000,area_sqft=1500)
+        social.seller_type=SellerType.UNKNOWN
+        result=correlate_public_contacts([portal,social])
+        self.assertEqual(result[0].phone,"+919876543210")
+        self.assertEqual(result[0].seller_type,SellerType.VERIFIED_OWNER)
+
+    def test_public_contact_requires_area_and_price_match(self):
+        portal=listing(source="99acres.com",url="https://www.99acres.com/property/1",phone=None,phone_public=False,seller_claim="owner",price=4_450_000,area_sqft=1500)
+        unrelated=listing(source="facebook.com",url="https://facebook.com/post/1",price=5_500_000,area_sqft=2400)
+        correlate_public_contacts([portal,unrelated])
+        self.assertIsNone(portal.phone)
 
 
 if __name__ == "__main__":

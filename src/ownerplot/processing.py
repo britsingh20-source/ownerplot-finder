@@ -11,6 +11,8 @@ PLOT_WORDS = {"plot", "land", "site", "residential land", "house site", "vacant 
 BROKER_WORDS = {"broker", "agent", "consultant", "agency", "realty", "commission", "brokerage"}
 OWNER_WORDS = {"owner", "direct owner", "no brokerage", "owner posted", "owner property"}
 ITEM_HISTORY_RE = re.compile(r"\b(\d{1,5})\s+(?:items?|ads?|listings?)\s+(?:listed|posted)\b", re.I)
+PORTAL_DOMAINS={"99acres.com","magicbricks.com"}
+GENERIC_TOKENS={"plot","land","sale","owner","property","residential","coimbatore","kalapatti","contact","price","sqft","square","feet","road","near"}
 
 
 def normalize_phone(value: str | None) -> str | None:
@@ -95,6 +97,48 @@ def analyze_seller_history(listings: list[Listing]) -> list[Listing]:
                 item.broker_risk=max(item.broker_risk,70)
             elif len(sources)>=2 and len(properties)==1:
                 item.evidence.append("Public contact corroborated on multiple sources for one property")
+    return listings
+
+
+def _portal_listing(item: Listing) -> bool:
+    return any(domain in f"{item.source} {item.url}".lower() for domain in PORTAL_DOMAINS)
+
+
+def _match_score(first: Listing,second: Listing) -> int:
+    if first.locality.lower()!=second.locality.lower(): return 0
+    score=40
+    if first.area_sqft and second.area_sqft:
+        difference=abs(first.area_sqft-second.area_sqft)/max(first.area_sqft,second.area_sqft)
+        if difference>0.03: return 0
+        score+=25
+    else: return 0
+    if first.price and second.price:
+        difference=abs(first.price-second.price)/max(first.price,second.price)
+        if difference>0.05: return 0
+        score+=25
+    else: return 0
+    first_tokens=set(re.findall(r"[a-z0-9]+",f"{first.title} {first.description}".lower()))-GENERIC_TOKENS
+    second_tokens=set(re.findall(r"[a-z0-9]+",f"{second.title} {second.description}".lower()))-GENERIC_TOKENS
+    if len(first_tokens & second_tokens)>=2: score+=10
+    return score
+
+
+def correlate_public_contacts(listings: list[Listing]) -> list[Listing]:
+    """Attach only strongly matched, openly published contacts to owner-labelled portal ads."""
+    donors=[item for item in listings if item.phone_public and item.phone and not _portal_listing(item) and item.seller_type not in {SellerType.BROKER,SellerType.BUILDER}]
+    for target in listings:
+        if target.phone or not _portal_listing(target): continue
+        text=f"{target.seller_claim or ''} {target.title} {target.description}".lower()
+        if not re.search(r"\b(owner|contact owner|posted by owner|individual)\b",text): continue
+        matches=[(score,donor) for donor in donors if (score:=_match_score(target,donor))>=90]
+        if not matches: continue
+        score,donor=max(matches,key=lambda pair:pair[0])
+        target.phone=normalize_phone(donor.phone)
+        target.phone_public=bool(target.phone)
+        target.matching_contact_sources=max(2,target.matching_contact_sources)
+        target.contact_verification="public_cross_source_match"
+        target.evidence.extend([f"Public contact matched from {donor.url}",f"Cross-source property match score: {score}/100"])
+        classify_seller(target)
     return listings
 
 

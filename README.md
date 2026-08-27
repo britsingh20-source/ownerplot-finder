@@ -79,6 +79,12 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 Optional repository variable `PORTAL_CONTACT_MONTHLY_BUDGET` defaults to `25`. This ledger helps plan usage; the portal account remains the official contact balance.
 
+## Public-media contact enrichment
+
+Add the existing `YOUTUBE_API_KEY` as a GitHub Actions secret in this repository. OwnerPlot Finder batches public YouTube video IDs through the official API, reads their public descriptions and publication dates, and extracts visibly advertised phone, `tel:` and WhatsApp contacts. Public webpage parsing also records `tel:` and `wa.me` links.
+
+A social-media contact is attached to a 99acres or MagicBricks owner-labelled record only when locality, plot area (within 3%), and price (within 5%) match. The evidence stores both source URLs and a match score. Numbers from high-volume brokers/builders remain rejected; hidden portal contacts remain reveal-only.
+
 ## Local quick start
 
 1. Copy `.env.example` to `.env` and add the Telegram token.

@@ -21,6 +21,13 @@ class _TextExtractor(HTMLParser):
         super().__init__(); self.parts=[]; self.title=""; self._in_title=False
     def handle_starttag(self, tag, attrs):
         if tag == "title": self._in_title=True
+        values=dict(attrs)
+        if tag == "a" and values.get("href"):
+            href=values["href"]
+            if href.startswith("tel:") or "wa.me/" in href or "api.whatsapp.com/" in href:
+                self.parts.append(href)
+        if tag == "meta" and values.get("content") and values.get("property") in {"og:description","twitter:description"}:
+            self.parts.append(values["content"])
     def handle_endtag(self, tag):
         if tag == "title": self._in_title=False
     def handle_data(self, data):
@@ -124,6 +131,55 @@ def _xml_entries(xml_text):
     return output
 
 
+_YOUTUBE_CACHE={}
+
+
+def _youtube_video_id(url):
+    parsed=urlparse(url)
+    host=(parsed.hostname or "").lower().removeprefix("www.")
+    if host=="youtu.be": return parsed.path.strip("/").split("/")[0] or None
+    if host not in {"youtube.com","m.youtube.com"}: return None
+    if parsed.path=="/watch":
+        from urllib.parse import parse_qs
+        return (parse_qs(parsed.query).get("v") or [None])[0]
+    match=re.match(r"/(?:shorts|embed)/([^/?]+)",parsed.path)
+    return match.group(1) if match else None
+
+
+async def _enrich_youtube_descriptions(listings,client):
+    """Use the official API to read public video descriptions; never accesses private data."""
+    api_key=os.getenv("YOUTUBE_API_KEY","").strip()
+    keyed={video_id:item for item in listings if (video_id:=_youtube_video_id(item.url))}
+    if not keyed or not api_key: return listings
+    missing=[video_id for video_id in keyed if video_id not in _YOUTUBE_CACHE]
+    for start in range(0,len(missing),50):
+        batch=missing[start:start+50]
+        try:
+            response=await client.get("https://www.googleapis.com/youtube/v3/videos",params={"key":api_key,"part":"snippet","id":",".join(batch)})
+            response.raise_for_status()
+            returned={item["id"]:item.get("snippet",{}) for item in response.json().get("items",[])}
+            for video_id in batch: _YOUTUBE_CACHE[video_id]=returned.get(video_id)
+        except (httpx.HTTPError,ValueError,KeyError):
+            for video_id in batch: _YOUTUBE_CACHE[video_id]=None
+    for video_id,item in keyed.items():
+        snippet=_YOUTUBE_CACHE.get(video_id)
+        if not snippet: continue
+        description=snippet.get("description","")
+        channel=snippet.get("channelTitle","")
+        item.description=f"{item.description} {description} Channel: {channel}"[:20_000]
+        item.title=snippet.get("title") or item.title
+        if phone:=_phone(description):
+            item.phone=phone; item.phone_public=True
+            item.evidence.append("Contact visibly published in official YouTube video description")
+        if not item.original_posted_at:
+            posted,confidence,evidence=_original_post_date(item.description,snippet.get("publishedAt"))
+            item.original_posted_at=posted; item.date_confidence=confidence
+            item.date_status="verified_recent" if posted else item.date_status
+            item.evidence.append(evidence)
+        if re.search(r"\b(owner|direct owner|no brokerage|individual)\b",description,re.I): item.seller_claim="owner"
+    return listings
+
+
 def _public_ip(host):
     try: addresses=socket.getaddrinfo(host,None)
     except socket.gaierror: return False
@@ -201,7 +257,7 @@ class GooglePublicWebCollector:
             if phone:
                 evidence.append("Contact visibly present in public page or indexed result metadata")
             output.append(Listing(source=urlparse(url).hostname or "public-web",source_id=item.get("cacheId") or url,url=url,title=title,description=public_text[:20_000],locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",public_text,re.I) else "unknown",price=_price(public_text),area_sqft=_area(public_text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner)\b",public_text,re.I) else None,evidence=evidence))
-        return output
+        return await _enrich_youtube_descriptions(output,self.client)
 
 
 class TavilyPublicWebCollector:
@@ -262,7 +318,7 @@ class TavilyPublicWebCollector:
             evidence=[f"Tavily discovery cutoff: last {query.max_age_days} days",date_evidence]
             evidence.append("Contact visibly present in Tavily-extracted public source content" if phone else "Public source discovered through Tavily")
             output.append(Listing(source=host or "tavily",source_id=url,url=url,title=item.get("title") or "Public property listing",description=text,locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",text,re.I) else None,original_posted_at=posted_at,date_confidence=date_confidence,date_status="verified_recent" if posted_at and posted_at.date()>=datetime.fromisoformat(cutoff).date() else "expired" if posted_at else "unverified",evidence=evidence))
-        return output
+        return await _enrich_youtube_descriptions(output,self.client)
 
 
 class DirectPublicFeedCollector:
@@ -375,7 +431,7 @@ class DirectPublicFeedCollector:
             if isinstance(batch,BaseException): continue
             tasks.extend(process(source,entry) for entry in batch)
         results=await asyncio.gather(*tasks,return_exceptions=True)
-        return [item for item in results if isinstance(item,Listing)]
+        return await _enrich_youtube_descriptions([item for item in results if isinstance(item,Listing)],self.client)
 
 
 class EmptyCollector:
