@@ -38,7 +38,9 @@ Results <- Telegram formatter <- Deduplication <- Normalization
 
 Add repository secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, and `TAVILY_API_KEY`. The reviewed-domain defaults are stored in `config/allowed-public-domains.txt`; an `ALLOWED_PUBLIC_DOMAINS` repository variable can override them with a comma-separated list. GitHub supplies `GITHUB_TOKEN` automatically.
 
-`monitor.yml` scans one rotating Coimbatore locality hourly and alerts only after each locality has a baseline, keeping normal monthly usage within Tavily's free credits. `telegram-commands.yml` checks Telegram every five minutes, so command replies are normally delayed by up to five minutes.
+`monitor.yml` rotates one locality/source profile hourly: public social contacts, property portals, then local Coimbatore sites. A complete deep cycle across the locality registry takes about five days and remains within Tavily's 1,000 monthly free credits. Telegram-requested searches run all three profiles immediately, merge duplicates and normally reply within five minutes.
+
+MagicBricks, 99acres, NoBroker and Housing are discovery-only: their public listing links and metadata may be returned, but OwnerPlot Finder never treats hidden contact controls as public phone evidence.
 
 ## Local quick start
 
