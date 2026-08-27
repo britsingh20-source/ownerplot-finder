@@ -1,6 +1,10 @@
 name: Telegram commands
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/telegram-commands.yml
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
@@ -30,7 +34,13 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -e .
-      - run: python -m ownerplot.github_runner commands
+      - name: Run Telegram command worker or smoke test
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            python -m ownerplot.github_runner smoke
+          else
+            python -m ownerplot.github_runner commands
+          fi
       - name: Save Telegram offset
         run: |
           if git diff --quiet -- data/state.json; then exit 0; fi

@@ -170,14 +170,28 @@ async def process_commands() -> int:
     return handled
 
 
+async def smoke_test() -> None:
+    await send_message(
+        "✅ OWNERPLOT FINDER LIVE TEST PASSED\n\n"
+        "GitHub Actions connected successfully to Telegram.\n"
+        "Search: /plots Kalapatti\n"
+        "Credits: /credits\n"
+        "Authorized capture: /capture <listing URL> <displayed number>\n\n"
+        "This test used no Tavily search credit and no portal contact credit."
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=["scan", "commands"])
+    parser.add_argument("mode", choices=["scan", "commands", "smoke"])
     parser.add_argument("--locality")
     parser.add_argument("--report", action="store_true")
     args = parser.parse_args()
     if args.mode == "commands":
         asyncio.run(process_commands())
+        return
+    if args.mode == "smoke":
+        asyncio.run(smoke_test())
         return
     localities = [args.locality] if args.locality else [line.strip() for line in LOCALITIES_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
     asyncio.run(scan(localities, rotate=not bool(args.locality), report=args.report))
