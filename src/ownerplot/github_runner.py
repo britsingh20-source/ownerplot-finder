@@ -9,7 +9,7 @@ from pathlib import Path
 import httpx
 
 from .collectors import TavilyPublicWebCollector
-from .processing import fingerprint
+from .processing import deduplicate, fingerprint
 from .query import parse_query
 from .service import SearchService, format_results
 
@@ -17,10 +17,11 @@ from .service import SearchService, format_results
 ROOT = Path(__file__).resolve().parents[2]
 STATE_PATH = ROOT / "data" / "state.json"
 LOCALITIES_PATH = ROOT / "config" / "coimbatore-localities.txt"
+PROFILES=("public_contacts","portals","local_sites")
 
 
 def load_state() -> dict:
-    default = {"telegram_update_offset": 0, "locality_cursor": 0, "seen": {}, "initialized": False}
+    default = {"telegram_update_offset": 0, "scan_cursor": 0, "baselined": [], "seen": {}, "initialized": False}
     try:
         return default | json.loads(STATE_PATH.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
@@ -32,11 +33,16 @@ def save_state(state: dict) -> None:
     STATE_PATH.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def service_from_environment() -> SearchService:
-    collector = TavilyPublicWebCollector.from_environment()
+def service_from_environment(profile: str) -> SearchService:
+    collector = TavilyPublicWebCollector.from_environment(profile=profile)
     if collector is None:
         raise RuntimeError("TAVILY_API_KEY and the reviewed public-domain registry are required")
     return SearchService([collector])
+
+
+async def search_profiles(query,profiles=PROFILES):
+    batches=await asyncio.gather(*(service_from_environment(profile).search(query,force_refresh=True) for profile in profiles))
+    return deduplicate([item for batch in batches for item in batch])
 
 
 def authorized_chat(chat_id: int) -> bool:
@@ -71,29 +77,34 @@ async def send_message(text: str, chat_id: int | str | None = None) -> None:
 
 async def scan(localities: list[str], notify: bool = True, rotate: bool = False, report: bool = False) -> tuple[int, int]:
     state = load_state()
+    jobs=[]
     if rotate and localities:
-        batch_size = max(1, int(os.environ.get("SCAN_BATCH_SIZE", "4")))
-        total = len(localities)
-        cursor = int(state.get("locality_cursor", 0)) % total
-        localities = (localities + localities)[cursor:cursor + min(batch_size, total)]
-        state["locality_cursor"] = (cursor + len(localities)) % total
-    service = service_from_environment()
+        total=len(localities)*len(PROFILES)
+        cursor=int(state.get("scan_cursor",0))%total
+        jobs=[(localities[cursor//len(PROFILES)],(PROFILES[cursor%len(PROFILES)],))]
+        state["scan_cursor"]=(cursor+1)%total
+    else:
+        jobs=[(locality,PROFILES) for locality in localities]
     discovered = sent = 0
-    for locality in localities:
-        first_locality_scan = locality not in state["seen"]
+    baselined=set(state.get("baselined",[]))
+    for locality,profiles in jobs:
         query = parse_query(f"plots in {locality}")
-        results = await service.search(query, force_refresh=True)
+        results = await search_profiles(query,profiles)
         discovered += len(results)
-        state["last_run"]={"locality":locality,"unique_listings":len(results),"public_contacts":sum(bool(item.phone) for item in results),"sources":sorted({item.source for item in results})}
+        state["last_run"]={"locality":locality,"profiles":list(profiles),"unique_listings":len(results),"public_contacts":sum(bool(item.phone) for item in results),"sources":sorted({item.source for item in results})}
         if report:
-            await send_message("OWNERPLOT FINDER TEST\n\n" + format_results(query, results))
+            await send_message("OWNERPLOT FINDER DEEP SEARCH\n\n" + format_results(query, results))
         old = set(state["seen"].get(locality, []))
         keyed = {fingerprint(item): item for item in results}
         new_keys = [key for key in keyed if key not in old]
-        if not first_locality_scan and notify and new_keys:
+        baseline_keys={f"{locality}|{profile}" for profile in profiles}
+        first_profile_scan=not baseline_keys<=baselined
+        if not first_profile_scan and notify and new_keys:
             await send_message("NEW PUBLIC OWNER-PLOT POSTINGS\n\n" + format_results(query, [keyed[key] for key in new_keys]))
             sent += len(new_keys)
+        baselined.update(baseline_keys)
         state["seen"][locality] = sorted(old | set(keyed))[-5000:]
+    state["baselined"]=sorted(baselined)
     state["initialized"] = True
     save_state(state)
     return discovered, sent
@@ -103,7 +114,6 @@ async def process_commands() -> int:
     state = load_state()
     body = await telegram("getUpdates", {"offset": state["telegram_update_offset"], "timeout": 0, "allowed_updates": ["message"]})
     handled = 0
-    service = service_from_environment()
     for update in body.get("result", []):
         state["telegram_update_offset"] = max(state["telegram_update_offset"], update["update_id"] + 1)
         message = update.get("message") or {}
@@ -116,7 +126,7 @@ async def process_commands() -> int:
         else:
             try:
                 query = parse_query(text)
-                await send_message(format_results(query, await service.search(query, force_refresh=True)), chat_id)
+                await send_message(format_results(query, await search_profiles(query)), chat_id)
             except ValueError as exc:
                 await send_message(str(exc), chat_id)
         handled += 1
