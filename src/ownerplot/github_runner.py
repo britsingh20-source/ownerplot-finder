@@ -65,7 +65,7 @@ async def send_message(text: str, chat_id: int | str | None = None) -> None:
         await telegram("sendMessage", {"chat_id": destination, "text": text[start:start + 4000], "disable_web_page_preview": True})
 
 
-async def scan(localities: list[str], notify: bool = True, rotate: bool = False) -> tuple[int, int]:
+async def scan(localities: list[str], notify: bool = True, rotate: bool = False, report: bool = False) -> tuple[int, int]:
     state = load_state()
     if rotate and localities:
         batch_size = max(1, int(os.environ.get("SCAN_BATCH_SIZE", "4")))
@@ -80,6 +80,8 @@ async def scan(localities: list[str], notify: bool = True, rotate: bool = False)
         query = parse_query(f"plots in {locality}")
         results = await service.search(query, force_refresh=True)
         discovered += len(results)
+        if report:
+            await send_message("OWNERPLOT FINDER TEST\n\n" + format_results(query, results))
         old = set(state["seen"].get(locality, []))
         keyed = {fingerprint(item): item for item in results}
         new_keys = [key for key in keyed if key not in old]
@@ -121,12 +123,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=["scan", "commands"])
     parser.add_argument("--locality")
+    parser.add_argument("--report", action="store_true")
     args = parser.parse_args()
     if args.mode == "commands":
         asyncio.run(process_commands())
         return
     localities = [args.locality] if args.locality else [line.strip() for line in LOCALITIES_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
-    asyncio.run(scan(localities, rotate=not bool(args.locality)))
+    asyncio.run(scan(localities, rotate=not bool(args.locality), report=args.report))
 
 
 if __name__ == "__main__":
