@@ -45,6 +45,9 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(_price(text), 4_200_000)
         self.assertAlmostEqual(_area(text), 1089)
 
+    def test_malformed_area_is_ignored(self):
+        self.assertIsNone(_area("plot area , sqft"))
+
     def test_watch_baseline_and_new_listing(self):
         with tempfile.TemporaryDirectory() as directory:
             store = WatchStore(f"{directory}/test.sqlite3")
