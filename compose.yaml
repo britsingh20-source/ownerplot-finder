@@ -1,0 +1,19 @@
+services:
+  bot:
+    build: .
+    env_file: .env
+    depends_on: [db]
+    restart: unless-stopped
+    volumes:
+      - ownerplot_cache:/data
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ownerplot
+      POSTGRES_USER: ownerplot
+      POSTGRES_PASSWORD: ownerplot
+    volumes:
+      - ownerplot_data:/var/lib/postgresql/data
+volumes:
+  ownerplot_data:
+  ownerplot_cache:
