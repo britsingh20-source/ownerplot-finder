@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timedelta, timezone
 
 from .domain import Collector, Listing, SearchQuery, SellerType
 from .policy import enforce_contact_policy
-from .processing import classify_seller, deduplicate, is_plot, normalize_phone, validate_locality
+from .processing import analyze_seller_history, classify_seller, deduplicate, is_plot, normalize_phone, validate_locality
 from .cache import ListingCache
 
 
@@ -32,11 +33,18 @@ class SearchService:
                     continue
                 if query.max_price and listing.price and listing.price > query.max_price:
                     continue
-                classify_seller(listing)
-                if listing.seller_type in {SellerType.BROKER, SellerType.BUILDER}:
-                    continue
                 normalized.append(listing)
-        results = sorted(deduplicate(normalized), key=lambda x: (x.owner_confidence, bool(x.phone)), reverse=True)
+        analyze_seller_history(normalized)
+        retained=[]
+        cutoff=datetime.now(timezone.utc)-timedelta(days=query.max_age_days)
+        for listing in normalized:
+            if listing.original_posted_at and listing.original_posted_at<cutoff:
+                continue
+            classify_seller(listing)
+            if listing.seller_type in {SellerType.BROKER, SellerType.BUILDER}:
+                continue
+            retained.append(listing)
+        results = sorted(deduplicate(retained), key=lambda x: (x.date_status=="verified_recent",x.owner_confidence,bool(x.phone)), reverse=True)
         if self.cache:
             self.cache.put(query, results)
         return results
@@ -44,12 +52,14 @@ class SearchService:
 
 def format_results(query: SearchQuery, listings: list[Listing]) -> str:
     with_contacts = sum(bool(item.phone) for item in listings)
-    lines = [f"OWNER PLOTS — {query.locality.upper()}", f"Freshness: posted or updated within the last {query.max_age_days} days", f"Found {len(listings)} unique plots; {with_contacts} have public owner contacts."]
+    verified_dates=sum(item.date_status=="verified_recent" for item in listings)
+    lines = [f"OWNER PLOTS — {query.locality.upper()}", f"Freshness: posted or updated within the last {query.max_age_days} days", f"Found {len(listings)} unique plots; {with_contacts} have public contacts; {verified_dates} have verified original dates."]
     for index, item in enumerate(listings[:10], 1):
         price = f"₹{item.price/100_000:g} lakh" if item.price else "Price not stated"
         area = f"{item.area_sqft:g} sq.ft." if item.area_sqft else "Area not stated"
         contact = item.phone or "Not publicly displayed — use source enquiry"
-        lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Owner confidence: {item.owner_confidence}%", f"Contact: {contact}", f"Source: {item.url}"])
+        posted=item.original_posted_at.date().isoformat() if item.original_posted_at else "Unverified — review before contact"
+        lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Seller: {item.seller_type.value.replace('_',' ').title()} · owner {item.owner_confidence}% · broker risk {item.broker_risk}%", f"Original post/update: {posted}", f"Contact status: {item.contact_verification.replace('_',' ').title()}", f"Contact: {contact}", f"Source: {item.url}"])
     if not listings:
         lines.append("No verified public owner-plot results are currently available from enabled sources.")
     return "\n".join(lines)
