@@ -1,6 +1,12 @@
 import unittest
 import tempfile
+import json
+import os
+from unittest.mock import patch
 
+from cryptography.fernet import Fernet
+
+from ownerplot.authorized_contacts import capture_contact, credit_status, enrich_authorized_contacts, parse_capture_command
 from ownerplot.domain import Listing, SellerType
 from ownerplot.policy import enforce_contact_policy
 from ownerplot.processing import analyze_seller_history, classify_seller, deduplicate, normalize_phone, validate_locality
@@ -81,6 +87,31 @@ class CoreTests(unittest.TestCase):
             self.assertEqual(store.list(123)[0][2].locality, "Kalapatti")
             self.assertEqual(store.new_fingerprints(123, "Kalapatti", ["one"]), ["one"])
             self.assertEqual(store.new_fingerprints(123, "Kalapatti", ["one", "two"]), ["two"])
+
+    def test_authorized_capture_is_encrypted_and_reused(self):
+        state={}
+        url="https://www.99acres.com/property-in-kalapatti-coimbatore-123?tracking=test"
+        with patch.dict(os.environ,{"CONTACT_STORE_KEY":Fernet.generate_key().decode()},clear=False):
+            first=capture_contact(state,url,"98765 43210")
+            second=capture_contact(state,url,"98765 43210")
+            self.assertTrue(first["new_credit"])
+            self.assertFalse(second["new_credit"])
+            self.assertNotIn("9876543210",json.dumps(state))
+            item=listing(source="99acres.com",url=url,phone=None,phone_public=False,seller_claim="owner")
+            enriched=enrich_authorized_contacts([item],state)[0]
+            self.assertEqual(enriched.phone,"+919876543210")
+            self.assertEqual(enriched.contact_verification,"authorized_captured_owner")
+            self.assertIn("99acres: 1/25",credit_status(state))
+
+    def test_hidden_owner_listing_is_prioritized_for_reveal(self):
+        item=listing(source="magicbricks.com",url="https://www.magicbricks.com/propertyDetails/example-123",phone=None,phone_public=False,seller_claim="posted by owner",date_confidence=80,locality_confidence=100)
+        enriched=enrich_authorized_contacts([item],{})[0]
+        self.assertTrue(enriched.reveal_required)
+        self.assertGreaterEqual(enriched.reveal_priority,90)
+
+    def test_capture_command_rejects_unapproved_portal(self):
+        with self.assertRaises(ValueError):
+            parse_capture_command("/capture https://example.com/property/1 9876543210")
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ from pathlib import Path
 
 import httpx
 
+from .authorized_contacts import capture_contact, credit_status, enrich_authorized_contacts, parse_capture_command
 from .collectors import DirectPublicFeedCollector, TavilyPublicWebCollector
 from .processing import deduplicate, fingerprint
 from .query import parse_query
@@ -53,7 +54,7 @@ async def search_profiles(query,profiles=PROFILES):
     if not successful:
         first=batches[0]
         raise RuntimeError(f"All configured search profiles failed: {first}")
-    return deduplicate([item for batch in successful for item in batch])
+    return enrich_authorized_contacts(deduplicate([item for batch in successful for item in batch]),load_state())
 
 
 def authorized_chat(chat_id: int) -> bool:
@@ -144,7 +145,19 @@ async def process_commands() -> int:
         if not chat_id or not text or not authorized_chat(chat_id):
             continue
         if text == "/start":
-            await send_message("OwnerPlot Finder is active. Try: /plots Kalapatti", chat_id)
+            await send_message("OwnerPlot Finder is active.\n\nSearch: /plots Kalapatti\nCredits: /credits\nSave a legitimately revealed contact: /capture <listing URL> <displayed number>", chat_id)
+        elif text == "/credits":
+            await send_message(credit_status(state),chat_id)
+        elif text.startswith("/capture"):
+            try:
+                url,phone=parse_capture_command(text)
+                result=capture_contact(state,url,phone)
+                budget=int(os.environ.get("PORTAL_CONTACT_MONTHLY_BUDGET","25"))
+                action="One contact credit recorded" if result["new_credit"] else "Existing listing updated; no additional credit recorded"
+                warning="\nWarning: local planned budget reached." if result["used"]>=budget else ""
+                await send_message(f"AUTHORIZED CONTACT SAVED\nPortal: {result['portal']}\n{action}\nLedger: {result['used']}/{budget}\nThe number is encrypted in repository state.{warning}",chat_id)
+            except (ValueError,RuntimeError) as exc:
+                await send_message(str(exc),chat_id)
         else:
             try:
                 query = parse_query(text)

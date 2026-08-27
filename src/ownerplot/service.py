@@ -51,15 +51,24 @@ class SearchService:
 
 
 def format_results(query: SearchQuery, listings: list[Listing]) -> str:
-    with_contacts = sum(bool(item.phone) for item in listings)
+    public_contacts = sum(bool(item.phone) and item.phone_public for item in listings)
+    captured_contacts = sum(item.contact_verification=="authorized_captured_owner" for item in listings)
+    reveal_required = sum(item.reveal_required for item in listings)
     verified_dates=sum(item.date_status=="verified_recent" for item in listings)
-    lines = [f"OWNER PLOTS — {query.locality.upper()}", f"Freshness: posted or updated within the last {query.max_age_days} days", f"Found {len(listings)} unique plots; {with_contacts} have public contacts; {verified_dates} have verified original dates."]
+    lines = [f"OWNER PLOTS — {query.locality.upper()}", f"Freshness: posted or updated within the last {query.max_age_days} days", f"Found {len(listings)} unique plots; {public_contacts} public contacts; {captured_contacts} authorized saved contacts; {reveal_required} require portal reveal; {verified_dates} verified dates."]
     for index, item in enumerate(listings[:10], 1):
         price = f"₹{item.price/100_000:g} lakh" if item.price else "Price not stated"
         area = f"{item.area_sqft:g} sq.ft." if item.area_sqft else "Area not stated"
-        contact = item.phone or "Not publicly displayed — use source enquiry"
+        if item.phone:
+            contact=item.phone
+        elif item.reveal_required:
+            contact=f"Authorized reveal required · priority {item.reveal_priority}/100"
+        else:
+            contact="Not publicly displayed — use source enquiry"
         posted=item.original_posted_at.date().isoformat() if item.original_posted_at else "Unverified — review before contact"
         lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Seller: {item.seller_type.value.replace('_',' ').title()} · owner {item.owner_confidence}% · broker risk {item.broker_risk}%", f"Original post/update: {posted}", f"Contact status: {item.contact_verification.replace('_',' ').title()}", f"Contact: {contact}", f"Source: {item.url}"])
+        if item.reveal_required:
+            lines.append("After legitimately revealing it, send: /capture <listing URL> <displayed number>")
     if not listings:
         lines.append("No verified public owner-plot results are currently available from enabled sources.")
     return "\n".join(lines)

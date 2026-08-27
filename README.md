@@ -58,6 +58,27 @@ Owner labels are not trusted by themselves. Each result records the original pub
 
 `config/direct-sources.yaml` contains explicitly reviewed RSS and sitemap endpoints. Every scheduled run fetches each direct feed once, checks it against every configured Coimbatore locality, parses original publish/last-modified dates, retains exact source URLs, and applies the same 90-day/locality/owner filters. One search-provider locality/profile then runs as optional discovery. A depleted Tavily account therefore no longer stops direct-source monitoring.
 
+## Authorized portal contact capture
+
+OwnerPlot Finder never bypasses 99acres BOSS, MagicBricks subscription limits, OTP, CAPTCHA, login, or hidden-contact controls. It discovers and ranks owner-labelled listings first so a portal credit is used only after locality, freshness, broker-risk, and duplicate checks.
+
+After you intentionally reveal a number through your legitimate portal account, save it from the private Telegram chat:
+
+```text
+/capture https://www.99acres.com/exact-property-listing 9876543210
+/credits
+```
+
+The phone number is encrypted before repository state is committed. Repeat capture of the same canonical listing does not consume another local ledger entry. Future searches reuse the authorized contact and distinguish it from a publicly displayed number.
+
+For simpler activation, the workflow can derive a separate encryption key from the existing `TELEGRAM_BOT_TOKEN`. A dedicated key is recommended for independent rotation. Generate it locally, then add its output as the optional GitHub Actions secret `CONTACT_STORE_KEY`:
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Optional repository variable `PORTAL_CONTACT_MONTHLY_BUDGET` defaults to `25`. This ledger helps plan usage; the portal account remains the official contact balance.
+
 ## Local quick start
 
 1. Copy `.env.example` to `.env` and add the Telegram token.

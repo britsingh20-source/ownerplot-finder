@@ -54,6 +54,8 @@ class Listing:
     broker_risk: int = 0
     contact_verification: str = "hidden_contact"
     matching_contact_sources: int = 0
+    reveal_required: bool = False
+    reveal_priority: int = 0
     evidence: list[str] = field(default_factory=list)
 
 
