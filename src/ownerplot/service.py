@@ -44,7 +44,7 @@ class SearchService:
 
 def format_results(query: SearchQuery, listings: list[Listing]) -> str:
     with_contacts = sum(bool(item.phone) for item in listings)
-    lines = [f"OWNER PLOTS — {query.locality.upper()}", f"Found {len(listings)} unique plots; {with_contacts} have public owner contacts."]
+    lines = [f"OWNER PLOTS — {query.locality.upper()}", f"Freshness: posted or updated within the last {query.max_age_days} days", f"Found {len(listings)} unique plots; {with_contacts} have public owner contacts."]
     for index, item in enumerate(listings[:10], 1):
         price = f"₹{item.price/100_000:g} lakh" if item.price else "Price not stated"
         area = f"{item.area_sqft:g} sq.ft." if item.area_sqft else "Area not stated"
