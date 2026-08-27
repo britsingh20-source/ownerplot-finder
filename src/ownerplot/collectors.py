@@ -153,8 +153,8 @@ class TavilyPublicWebCollector:
         return cls(key,domains) if key and domains else None
 
     async def search(self,query):
-        terms=f'{query.locality} Coimbatore plot land sale owner direct owner no brokerage contact phone'
-        response=await self.client.post("https://api.tavily.com/search",json={"query":terms,"topic":"general","search_depth":"basic","max_results":10,"include_answer":False,"include_raw_content":"text","include_images":False,"include_domains":sorted(self.allowed_domains)})
+        terms=f'Find public advertisements for plots or land for sale in {query.locality}, Coimbatore, prioritizing direct-owner or no-brokerage posts that visibly publish a phone, call, mobile or WhatsApp contact number.'
+        response=await self.client.post("https://api.tavily.com/search",json={"query":terms,"topic":"general","search_depth":"basic","max_results":20,"include_answer":False,"include_raw_content":"text","include_images":False,"include_domains":sorted(self.allowed_domains)})
         if response.is_error:
             try:
                 detail=response.json().get("detail") or response.json().get("error") or response.text[:300]
