@@ -26,6 +26,7 @@ class SearchQuery:
     property_type: str = "plot"
     max_price: int | None = None
     transaction: str = "sale"
+    max_age_days: int = 90
 
 
 @dataclass(slots=True)
@@ -52,4 +53,3 @@ class Collector(Protocol):
     source_id: str
 
     async def search(self, query: SearchQuery) -> list[Listing]: ...
-
