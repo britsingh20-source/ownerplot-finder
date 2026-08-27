@@ -29,6 +29,15 @@ class _TextExtractor(HTMLParser):
 PHONE_RE=re.compile(r"(?:\+?91[\s.-]?)?([6-9](?:[\s.-]?\d){9})(?!\d)")
 PRICE_RE=re.compile(r"(?:₹|rs\.?|inr)?\s*([0-9]+(?:\.[0-9]+)?)\s*(crores?|cr|lakhs?|lacs?)", re.I)
 AREA_RE=re.compile(r"([0-9]+(?:,[0-9]{3})*(?:\.[0-9]+)?)\s*(sq\.?\s*ft|sqft|square feet|cents?)", re.I)
+DATE_LABEL_RE=re.compile(
+    r"\b(?:posted|published|updated|listed)(?:\s+on|\s*:)?\s*"
+    r"(today|yesterday|\d{1,2}\s+(?:days?|weeks?|months?)\s+ago|"
+    r"\d{4}-\d{2}-\d{2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|"
+    r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+    r"jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|"
+    r"dec(?:ember)?)\s+\d{1,2}(?:,)?\s+\d{4})\b",
+    re.I,
+)
 
 
 def _price(text):
@@ -47,6 +56,39 @@ def _area(text):
 def _phone(text):
     m=PHONE_RE.search(text)
     return re.sub(r"\D","",m.group(1)) if m else None
+
+
+def _original_post_date(text, published_date=None, now=None):
+    """Return (UTC datetime, confidence, evidence) from original-source metadata/text."""
+    now=now or datetime.now(timezone.utc)
+    candidates=[]
+    if published_date:
+        candidates.append((str(published_date).strip(),95,"Source metadata publish date"))
+    match=DATE_LABEL_RE.search(text or "")
+    if match:
+        candidates.append((match.group(1).strip(),80,"Original page labelled post/update date"))
+    for raw,confidence,evidence in candidates:
+        lowered=raw.lower()
+        try:
+            if lowered=="today": value=now
+            elif lowered=="yesterday": value=now-timedelta(days=1)
+            elif relative:=re.fullmatch(r"(\d{1,2})\s+(day|week|month)s?\s+ago",lowered):
+                amount=int(relative.group(1)); unit=relative.group(2)
+                value=now-timedelta(days=amount*(1 if unit=="day" else 7 if unit=="week" else 30))
+            else:
+                normalized=raw.replace("Z","+00:00")
+                try: value=datetime.fromisoformat(normalized)
+                except ValueError:
+                    value=None
+                    for fmt in ("%d/%m/%Y","%d-%m-%Y","%b %d, %Y","%B %d, %Y","%b %d %Y","%B %d %Y"):
+                        try: value=datetime.strptime(raw,fmt); break
+                        except ValueError: pass
+                    if value is None: continue
+            if value.tzinfo is None: value=value.replace(tzinfo=timezone.utc)
+            return value.astimezone(timezone.utc),confidence,evidence
+        except (OverflowError,ValueError):
+            continue
+    return None,0,"Original post date unavailable"
 
 
 def _public_ip(host):
@@ -180,12 +222,13 @@ class TavilyPublicWebCollector:
             url=item.get("url",""); parsed=urlparse(url); host=(parsed.hostname or "").lower().removeprefix("www.")
             if parsed.scheme!="https" or not any(host==d or host.endswith(f".{d}") for d in self.allowed_domains): continue
             text=" ".join(filter(None,[item.get("title",""),item.get("content",""),item.get("raw_content","")]))[:20_000]
+            posted_at,date_confidence,date_evidence=_original_post_date(text,item.get("published_date"))
             phone=_phone(text)
             if host in self.DISCOVERY_ONLY:
                 phone=None
-            evidence=[f"Tavily publish/update filter: last {query.max_age_days} days"]
+            evidence=[f"Tavily discovery cutoff: last {query.max_age_days} days",date_evidence]
             evidence.append("Contact visibly present in Tavily-extracted public source content" if phone else "Public source discovered through Tavily")
-            output.append(Listing(source=host or "tavily",source_id=url,url=url,title=item.get("title") or "Public property listing",description=text,locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",text,re.I) else None,evidence=evidence))
+            output.append(Listing(source=host or "tavily",source_id=url,url=url,title=item.get("title") or "Public property listing",description=text,locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",text,re.I) else None,original_posted_at=posted_at,date_confidence=date_confidence,date_status="verified_recent" if posted_at and posted_at.date()>=datetime.fromisoformat(cutoff).date() else "expired" if posted_at else "unverified",evidence=evidence))
         return output
 
 
