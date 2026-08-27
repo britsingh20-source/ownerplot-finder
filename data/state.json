@@ -2,24 +2,36 @@
   "initialized": true,
   "last_run": {
     "locality": "Kalapatti",
-    "public_contacts": 0,
+    "public_contacts": 6,
     "sources": [
       "commonfloor.com",
       "olx.in",
       "property.sulekha.com",
-      "roofandfloor.com"
+      "quikr.com"
     ],
-    "unique_listings": 6
+    "unique_listings": 16
   },
   "locality_cursor": 0,
   "seen": {
     "Kalapatti": [
+      "09a035ca786076492220",
       "0e40671b03cb701cd0a5",
+      "12649a1df1c3091efc0d",
       "1d81a0d8c1f3cad49b84",
+      "1eb4b8a1d6eef9fe8fa3",
+      "2ba777283c735006892e",
+      "48893afb4fc665b30757",
       "4c825cf434e8e285b277",
+      "63e44ecb0dc3e8581d16",
+      "6766c5c8bc9e9da5780f",
+      "7faa341f465c7935772e",
       "c4ffdf161a2c61e5f444",
+      "cb4c3a1188a58d37b943",
+      "dfb4072bf661a1fdeedc",
       "e10a8a78155c28fb67b1",
-      "f8ca07e2653042ebd4a4"
+      "e9ac442cfb40bad003f2",
+      "f8ca07e2653042ebd4a4",
+      "f9fc2986ee016a8e3420"
     ]
   },
   "telegram_update_offset": 0
