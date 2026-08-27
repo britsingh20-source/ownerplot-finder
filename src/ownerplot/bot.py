@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 from .cache import ListingCache, WatchStore
-from .collectors import EmptyCollector, GooglePublicWebCollector
+from .collectors import EmptyCollector, TavilyPublicWebCollector
 from .processing import fingerprint
 from .query import parse_query
 from .service import SearchService, format_results
@@ -13,7 +13,7 @@ dp=Dispatcher(); storage_path=os.getenv("CACHE_PATH","/tmp/ownerplot-cache.sqlit
 
 
 def build_service():
-    collector=GooglePublicWebCollector.from_environment()
+    collector=TavilyPublicWebCollector.from_environment()
     return SearchService([collector] if collector else [EmptyCollector()],ListingCache(storage_path))
 
 
