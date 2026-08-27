@@ -84,6 +84,7 @@ async def scan(localities: list[str], notify: bool = True, rotate: bool = False,
         query = parse_query(f"plots in {locality}")
         results = await service.search(query, force_refresh=True)
         discovered += len(results)
+        state["last_run"]={"locality":locality,"unique_listings":len(results),"public_contacts":sum(bool(item.phone) for item in results),"sources":sorted({item.source for item in results})}
         if report:
             await send_message("OWNERPLOT FINDER TEST\n\n" + format_results(query, results))
         old = set(state["seen"].get(locality, []))
