@@ -72,6 +72,13 @@ class GooglePublicWebCollector:
     def from_environment(cls):
         key,cse=os.getenv("GOOGLE_CSE_API_KEY",""),os.getenv("GOOGLE_CSE_ID","")
         domains={x.strip() for x in os.getenv("ALLOWED_PUBLIC_DOMAINS","").split(",") if x.strip()}
+        if not domains:
+            registry=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),"config","allowed-public-domains.txt")
+            try:
+                with open(registry,encoding="utf-8") as handle:
+                    domains={line.strip() for line in handle if line.strip() and not line.startswith("#")}
+            except OSError:
+                pass
         return cls(key,cse,domains) if key and cse and domains else None
 
     def _allowed_url(self,url):
@@ -93,12 +100,24 @@ class GooglePublicWebCollector:
         response.raise_for_status(); output=[]
         for item in response.json().get("items",[]):
             url=item.get("link","")
-            if not self._allowed_url(url) or not await self._robots_allowed(url): continue
-            try: page=await self.client.get(url); page.raise_for_status()
-            except httpx.HTTPError: continue
-            if "text/html" not in page.headers.get("content-type",""): continue
-            parser=_TextExtractor(); parser.feed(page.text[:2_000_000]); text=" ".join(parser.parts); phone=_phone(text)
-            output.append(Listing(source=urlparse(url).hostname or "public-web",source_id=item.get("cacheId") or url,url=url,title=parser.title or item.get("title","Public plot listing"),description=text[:20_000],locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner)\b",text,re.I) else None,evidence=["Contact visibly present in fetched public page"] if phone else []))
+            if not self._allowed_url(url): continue
+            public_text=" ".join(filter(None,[item.get("title",""),item.get("snippet","")]))
+            title=item.get("title","Public plot listing")
+            evidence=[]
+            if await self._robots_allowed(url):
+                try:
+                    page=await self.client.get(url); page.raise_for_status()
+                    if "text/html" in page.headers.get("content-type",""):
+                        parser=_TextExtractor(); parser.feed(page.text[:2_000_000])
+                        public_text += " " + " ".join(parser.parts)
+                        title=parser.title or title
+                        evidence.append("Public source page fetched with robots permission")
+                except httpx.HTTPError:
+                    pass
+            phone=_phone(public_text)
+            if phone:
+                evidence.append("Contact visibly present in public page or indexed result metadata")
+            output.append(Listing(source=urlparse(url).hostname or "public-web",source_id=item.get("cacheId") or url,url=url,title=title,description=public_text[:20_000],locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",public_text,re.I) else "unknown",price=_price(public_text),area_sqft=_area(public_text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner)\b",public_text,re.I) else None,evidence=evidence))
         return output
 
 
