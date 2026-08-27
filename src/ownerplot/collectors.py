@@ -260,6 +260,41 @@ class GooglePublicWebCollector:
         return await _enrich_youtube_descriptions(output,self.client)
 
 
+class YouTubePublicSearchCollector:
+    """Official-API discovery of recent public property videos and descriptions."""
+    source_id="youtube_public_search"
+
+    def __init__(self,api_key,client=None):
+        if httpx is None: raise RuntimeError("Install project dependencies before enabling YouTube search")
+        self.api_key=api_key
+        self.client=client or httpx.AsyncClient(timeout=30,follow_redirects=True,headers={"User-Agent":"OwnerPlotFinder/0.3"})
+
+    @classmethod
+    def from_environment(cls):
+        key=os.getenv("YOUTUBE_API_KEY","").strip()
+        return cls(key) if key else None
+
+    async def search(self,query):
+        cutoff=datetime.now(timezone.utc)-timedelta(days=query.max_age_days)
+        response=await self.client.get("https://www.googleapis.com/youtube/v3/search",params={"key":self.api_key,"part":"snippet","type":"video","maxResults":25,"order":"date","q":f'{query.locality} Coimbatore plot land for sale',"publishedAfter":cutoff.isoformat().replace("+00:00","Z"),"regionCode":"IN"})
+        if response.is_error:
+            try: detail=response.json().get("error",{}).get("message") or response.text[:300]
+            except ValueError: detail="unknown YouTube API error"
+            raise RuntimeError(f"YouTube Data API failed ({response.status_code}): {detail}")
+        output=[]
+        for result in response.json().get("items",[]):
+            video_id=(result.get("id") or {}).get("videoId")
+            snippet=result.get("snippet") or {}
+            if not video_id: continue
+            title=snippet.get("title",""); description=snippet.get("description","")
+            text=f"{title} {description} Channel: {snippet.get('channelTitle','')}"
+            if query.locality.lower() not in text.lower() or not re.search(r"\b(plot|land|site|residential)\b",text,re.I): continue
+            posted,confidence,evidence=_original_post_date(text,snippet.get("publishedAt"))
+            phone=_phone(text)
+            output.append(Listing(source="youtube.com",source_id=video_id,url=f"https://www.youtube.com/watch?v={video_id}",title=title or "Public property video",description=text,locality=query.locality,property_type="plot",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|direct owner|no brokerage|individual)\b",text,re.I) else None,original_posted_at=posted,date_confidence=confidence,date_status="verified_recent" if posted else "unverified",evidence=["Official YouTube keyword search",evidence]+(["Contact visibly published in public YouTube metadata"] if phone else [])))
+        return await _enrich_youtube_descriptions(output,self.client)
+
+
 class TavilyPublicWebCollector:
     """Tavily discovery constrained to the reviewed public-domain registry."""
     source_id="tavily_public_web"

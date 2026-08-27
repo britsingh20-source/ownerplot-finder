@@ -12,7 +12,7 @@ from ownerplot.domain import Listing, SellerType
 from ownerplot.policy import enforce_contact_policy
 from ownerplot.processing import analyze_seller_history, classify_seller, correlate_public_contacts, deduplicate, normalize_phone, validate_locality
 from ownerplot.query import parse_query
-from ownerplot.collectors import _area, _enrich_youtube_descriptions, _original_post_date, _phone, _price, _xml_entries, _youtube_video_id
+from ownerplot.collectors import YouTubePublicSearchCollector, _area, _enrich_youtube_descriptions, _original_post_date, _phone, _price, _xml_entries, _youtube_video_id
 from datetime import datetime, timezone
 from ownerplot.cache import WatchStore
 
@@ -127,6 +127,30 @@ class CoreTests(unittest.TestCase):
             enriched=asyncio.run(_enrich_youtube_descriptions([item],Client()))[0]
         self.assertEqual(enriched.phone,"9876543210")
         self.assertTrue(enriched.phone_public)
+
+    def test_youtube_keyword_search_returns_recent_public_contact(self):
+        class Response:
+            is_error=False
+            status_code=200
+            text=""
+            def __init__(self,payload): self.payload=payload
+            def raise_for_status(self): pass
+            def json(self): return self.payload
+        class Client:
+            async def get(self,url,**kwargs):
+                if url.endswith("/search"):
+                    self.search_params=kwargs["params"]
+                    return Response({"items":[{"id":{"videoId":"search999"},"snippet":{"title":"Kalapatti direct owner plot","description":"Residential land for sale","publishedAt":"2026-08-26T10:00:00Z","channelTitle":"Coimbatore Owner"}}]})
+                return Response({"items":[{"id":"search999","snippet":{"title":"Kalapatti direct owner plot","description":"4 cents near NGP College. Owner call +91 91234 56789","publishedAt":"2026-08-26T10:00:00Z","channelTitle":"Coimbatore Owner"}}]})
+        client=Client()
+        collector=YouTubePublicSearchCollector("test-key",client)
+        with patch.dict(os.environ,{"YOUTUBE_API_KEY":"test-key"},clear=False):
+            results=asyncio.run(collector.search(parse_query("plots in Kalapatti")))
+        self.assertEqual(len(results),1)
+        self.assertEqual(results[0].phone,"9123456789")
+        self.assertTrue(results[0].phone_public)
+        self.assertEqual(results[0].url,"https://www.youtube.com/watch?v=search999")
+        self.assertIn("Kalapatti Coimbatore",client.search_params["q"])
 
     def test_public_contact_cross_source_match(self):
         portal=listing(source="magicbricks.com",url="https://www.magicbricks.com/propertyDetails/example",phone=None,phone_public=False,seller_claim="contact owner",title="East plot near SVB Tech Park",description="Kalapatti 1500 sqft price 44.5 lakh",price=4_450_000,area_sqft=1500)

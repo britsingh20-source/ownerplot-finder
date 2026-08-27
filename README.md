@@ -83,6 +83,8 @@ Optional repository variable `PORTAL_CONTACT_MONTHLY_BUDGET` defaults to `25`. T
 
 Add the existing `YOUTUBE_API_KEY` as a GitHub Actions secret in this repository. OwnerPlot Finder batches public YouTube video IDs through the official API, reads their public descriptions and publication dates, and extracts visibly advertised phone, `tel:` and WhatsApp contacts. Public webpage parsing also records `tel:` and `wa.me` links.
 
+On-demand `/plots <locality>` searches include recent YouTube keyword discovery for that locality. Scheduled monitoring searches one rotating Coimbatore locality each hour to conserve YouTube API quota while continuing zero-credit direct-source scans across all configured localities.
+
 A social-media contact is attached to a 99acres or MagicBricks owner-labelled record only when locality, plot area (within 3%), and price (within 5%) match. The evidence stores both source URLs and a match score. Numbers from high-volume brokers/builders remain rejected; hidden portal contacts remain reveal-only.
 
 ## Local quick start
