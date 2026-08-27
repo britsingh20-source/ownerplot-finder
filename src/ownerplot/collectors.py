@@ -128,6 +128,49 @@ class GooglePublicWebCollector:
         return output
 
 
+class TavilyPublicWebCollector:
+    """Tavily discovery constrained to the reviewed public-domain registry."""
+    source_id="tavily_public_web"
+
+    def __init__(self,api_key,allowed_domains,client=None):
+        if httpx is None:
+            raise RuntimeError("Install project dependencies before enabling Tavily search")
+        self.api_key=api_key
+        self.allowed_domains={d.lower().removeprefix("www.") for d in allowed_domains if d}
+        self.client=client or httpx.AsyncClient(timeout=45,follow_redirects=True,headers={"Authorization":f"Bearer {api_key}","Content-Type":"application/json","User-Agent":"OwnerPlotFinder/0.1"})
+
+    @classmethod
+    def from_environment(cls):
+        key=os.getenv("TAVILY_API_KEY","").strip()
+        domains={x.strip() for x in os.getenv("ALLOWED_PUBLIC_DOMAINS","").split(",") if x.strip()}
+        if not domains:
+            registry=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),"config","allowed-public-domains.txt")
+            try:
+                with open(registry,encoding="utf-8") as handle:
+                    domains={line.strip() for line in handle if line.strip() and not line.startswith("#")}
+            except OSError:
+                pass
+        return cls(key,domains) if key and domains else None
+
+    async def search(self,query):
+        terms=f'{query.locality} Coimbatore plot land sale owner direct owner no brokerage contact phone'
+        response=await self.client.post("https://api.tavily.com/search",json={"query":terms,"topic":"general","search_depth":"basic","max_results":10,"include_answer":False,"include_raw_content":"text","include_images":False,"include_domains":sorted(self.allowed_domains)})
+        if response.is_error:
+            try:
+                detail=response.json().get("detail") or response.json().get("error") or response.text[:300]
+            except ValueError:
+                detail="unknown Tavily API error"
+            raise RuntimeError(f"Tavily Search API failed ({response.status_code}): {detail}")
+        output=[]
+        for item in response.json().get("results",[]):
+            url=item.get("url",""); parsed=urlparse(url); host=(parsed.hostname or "").lower().removeprefix("www.")
+            if parsed.scheme!="https" or not any(host==d or host.endswith(f".{d}") for d in self.allowed_domains): continue
+            text=" ".join(filter(None,[item.get("title",""),item.get("content",""),item.get("raw_content","")]))[:20_000]
+            phone=_phone(text)
+            output.append(Listing(source=host or "tavily",source_id=url,url=url,title=item.get("title") or "Public property listing",description=text,locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",text,re.I) else None,evidence=["Contact visibly present in Tavily-extracted public source content"] if phone else ["Public source discovered through Tavily"]))
+        return output
+
+
 class EmptyCollector:
     source_id="safe_default"
     async def search(self,query): return []
