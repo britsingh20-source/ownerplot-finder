@@ -8,7 +8,7 @@ from pathlib import Path
 
 import httpx
 
-from .collectors import GooglePublicWebCollector
+from .collectors import TavilyPublicWebCollector
 from .processing import fingerprint
 from .query import parse_query
 from .service import SearchService, format_results
@@ -33,9 +33,9 @@ def save_state(state: dict) -> None:
 
 
 def service_from_environment() -> SearchService:
-    collector = GooglePublicWebCollector.from_environment()
+    collector = TavilyPublicWebCollector.from_environment()
     if collector is None:
-        raise RuntimeError("GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID and ALLOWED_PUBLIC_DOMAINS are required")
+        raise RuntimeError("TAVILY_API_KEY and the reviewed public-domain registry are required")
     return SearchService([collector])
 
 
