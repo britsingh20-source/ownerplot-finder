@@ -20,7 +20,7 @@ LOCALITIES_PATH = ROOT / "config" / "coimbatore-localities.txt"
 
 
 def load_state() -> dict:
-    default = {"telegram_update_offset": 0, "seen": {}, "initialized": False}
+    default = {"telegram_update_offset": 0, "locality_cursor": 0, "seen": {}, "initialized": False}
     try:
         return default | json.loads(STATE_PATH.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
@@ -65,8 +65,14 @@ async def send_message(text: str, chat_id: int | str | None = None) -> None:
         await telegram("sendMessage", {"chat_id": destination, "text": text[start:start + 4000], "disable_web_page_preview": True})
 
 
-async def scan(localities: list[str], notify: bool = True) -> tuple[int, int]:
+async def scan(localities: list[str], notify: bool = True, rotate: bool = False) -> tuple[int, int]:
     state = load_state()
+    if rotate and localities:
+        batch_size = max(1, int(os.environ.get("SCAN_BATCH_SIZE", "4")))
+        total = len(localities)
+        cursor = int(state.get("locality_cursor", 0)) % total
+        localities = (localities + localities)[cursor:cursor + min(batch_size, total)]
+        state["locality_cursor"] = (cursor + len(localities)) % total
     service = service_from_environment()
     discovered = sent = 0
     for locality in localities:
@@ -119,7 +125,7 @@ def main() -> None:
         asyncio.run(process_commands())
         return
     localities = [args.locality] if args.locality else [line.strip() for line in LOCALITIES_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
-    asyncio.run(scan(localities))
+    asyncio.run(scan(localities, rotate=not bool(args.locality)))
 
 
 if __name__ == "__main__":
