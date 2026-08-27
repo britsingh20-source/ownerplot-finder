@@ -275,6 +275,8 @@ class DirectPublicFeedCollector:
         self.sources=[source for source in sources if source.get("enabled")]
         self.max_pages_per_source=max_pages_per_source
         self._robots_cache={}
+        self._feed_cache={}
+        self._page_cache={}
         self.client=client or httpx.AsyncClient(timeout=20,follow_redirects=True,headers={"User-Agent":"OwnerPlotFinder/0.2 (+public-feed-monitoring)"})
 
     @classmethod
@@ -310,6 +312,8 @@ class DirectPublicFeedCollector:
             self._robots_cache[robots_url]=False; return False
 
     async def _feed_entries(self,source):
+        cache_key=source.get("id") or repr(source.get("urls",[]))
+        if cache_key in self._feed_cache: return self._feed_cache[cache_key]
         domains={value.lower().removeprefix("www.") for value in source.get("allowed_domains",[])}
         pending=[(url,source.get("kind","rss")) for url in source.get("urls",[]) if self._host_allowed(url,domains)]
         pages=[]; visited=set()
@@ -324,7 +328,8 @@ class DirectPublicFeedCollector:
                 if not self._host_allowed(entry["url"],domains): continue
                 if entry["kind"]=="sitemap": pending.append((entry["url"],"sitemap"))
                 else: pages.append(entry)
-        return pages[:self.max_pages_per_source]
+        self._feed_cache[cache_key]=pages[:self.max_pages_per_source]
+        return self._feed_cache[cache_key]
 
     async def search(self,query):
         cutoff=datetime.now(timezone.utc)-timedelta(days=query.max_age_days)
@@ -342,15 +347,22 @@ class DirectPublicFeedCollector:
             if wanted and wanted<=metadata_tokens:
                 page_text=metadata_text; title=entry.get("title") or "Public property update"
             else:
-                if not await self._robots_allowed(entry["url"]): return None
-                try:
-                    page=await self.client.get(entry["url"]); page.raise_for_status()
-                except httpx.HTTPError: return None
-                final=str(page.url)
-                if not self._host_allowed(final,domains) or urlparse(final).path in {"","/"}: return None
-                if "text/html" not in page.headers.get("content-type",""): return None
-                parser=_TextExtractor(); parser.feed(page.text[:2_000_000])
-                page_text=" ".join(parser.parts)[:20_000]; title=parser.title or entry.get("title") or "Public property update"
+                cached=self._page_cache.get(entry["url"],...)
+                if cached is ...:
+                    if not await self._robots_allowed(entry["url"]):
+                        self._page_cache[entry["url"]]=None; return None
+                    try:
+                        page=await self.client.get(entry["url"]); page.raise_for_status()
+                    except httpx.HTTPError:
+                        self._page_cache[entry["url"]]=None; return None
+                    final=str(page.url)
+                    if not self._host_allowed(final,domains) or urlparse(final).path in {"","/"} or "text/html" not in page.headers.get("content-type",""):
+                        self._page_cache[entry["url"]]=None; return None
+                    parser=_TextExtractor(); parser.feed(page.text[:2_000_000])
+                    cached=(" ".join(parser.parts)[:20_000],parser.title)
+                    self._page_cache[entry["url"]]=cached
+                if cached is None: return None
+                page_text,page_title=cached; title=page_title or entry.get("title") or "Public property update"
             if not wanted<=set(re.findall(r"[a-z0-9]+",page_text.lower())): return None
             if not re.search(r"\b(plot|land|site|residential)\b",page_text,re.I): return None
             phone=_phone(page_text)

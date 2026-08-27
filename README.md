@@ -56,7 +56,7 @@ Owner labels are not trusted by themselves. Each result records the original pub
 
 ## Zero-credit direct monitoring
 
-`config/direct-sources.yaml` contains explicitly reviewed RSS and sitemap endpoints. Every scheduled run checks these direct sources first, parses original publish/last-modified dates, retains exact source URLs, applies the same 90-day/locality/owner filters, and then uses a search-provider profile only as optional discovery. A depleted Tavily account therefore no longer stops direct-source monitoring.
+`config/direct-sources.yaml` contains explicitly reviewed RSS and sitemap endpoints. Every scheduled run fetches each direct feed once, checks it against every configured Coimbatore locality, parses original publish/last-modified dates, retains exact source URLs, and applies the same 90-day/locality/owner filters. One search-provider locality/profile then runs as optional discovery. A depleted Tavily account therefore no longer stops direct-source monitoring.
 
 ## Local quick start
 

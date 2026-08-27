@@ -19,6 +19,7 @@ STATE_PATH = ROOT / "data" / "state.json"
 LOCALITIES_PATH = ROOT / "config" / "coimbatore-localities.txt"
 DISCOVERY_PROFILES=("public_contacts","portals","local_sites")
 PROFILES=("direct_sources",)+DISCOVERY_PROFILES
+_DIRECT_COLLECTOR=None
 
 
 def load_state() -> dict:
@@ -35,7 +36,12 @@ def save_state(state: dict) -> None:
 
 
 def service_from_environment(profile: str) -> SearchService:
-    collector = DirectPublicFeedCollector.from_environment() if profile=="direct_sources" else TavilyPublicWebCollector.from_environment(profile=profile)
+    global _DIRECT_COLLECTOR
+    if profile=="direct_sources":
+        _DIRECT_COLLECTOR=_DIRECT_COLLECTOR or DirectPublicFeedCollector.from_environment()
+        collector=_DIRECT_COLLECTOR
+    else:
+        collector=TavilyPublicWebCollector.from_environment(profile=profile)
     if collector is None:
         raise RuntimeError(f"Collector configuration is unavailable for {profile}")
     return SearchService([collector])
@@ -86,7 +92,8 @@ async def scan(localities: list[str], notify: bool = True, rotate: bool = False,
     if rotate and localities:
         total=len(localities)*len(DISCOVERY_PROFILES)
         cursor=int(state.get("scan_cursor",0))%total
-        jobs=[(localities[cursor//len(DISCOVERY_PROFILES)],("direct_sources",DISCOVERY_PROFILES[cursor%len(DISCOVERY_PROFILES)]))]
+        jobs=[(locality,("direct_sources",)) for locality in localities]
+        jobs.append((localities[cursor//len(DISCOVERY_PROFILES)],(DISCOVERY_PROFILES[cursor%len(DISCOVERY_PROFILES)],)))
         state["scan_cursor"]=(cursor+1)%total
     else:
         jobs=[(locality,PROFILES) for locality in localities]
