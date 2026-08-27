@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-import ipaddress, os, re, socket
+import asyncio, ipaddress, os, re, socket
+from email.utils import parsedate_to_datetime
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
+from pathlib import Path
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
+from xml.etree import ElementTree
+import yaml
 try:
     import httpx
 except ModuleNotFoundError:  # Parser tests can run before project dependencies are installed.
@@ -79,8 +83,10 @@ def _original_post_date(text, published_date=None, now=None):
                 normalized=raw.replace("Z","+00:00")
                 try: value=datetime.fromisoformat(normalized)
                 except ValueError:
-                    value=None
+                    try: value=parsedate_to_datetime(raw)
+                    except (TypeError,ValueError): value=None
                     for fmt in ("%d/%m/%Y","%d-%m-%Y","%b %d, %Y","%B %d, %Y","%b %d %Y","%B %d %Y"):
+                        if value is not None: break
                         try: value=datetime.strptime(raw,fmt); break
                         except ValueError: pass
                     if value is None: continue
@@ -89,6 +95,33 @@ def _original_post_date(text, published_date=None, now=None):
         except (OverflowError,ValueError):
             continue
     return None,0,"Original post date unavailable"
+
+
+def _xml_entries(xml_text):
+    """Parse RSS, Atom, sitemap and sitemap-index XML without trusting namespaces."""
+    try: root=ElementTree.fromstring(xml_text)
+    except ElementTree.ParseError: return []
+    local=lambda tag: tag.rsplit("}",1)[-1].lower()
+    output=[]
+    root_kind=local(root.tag)
+    if root_kind in {"urlset","sitemapindex"}:
+        child_kind="sitemap" if root_kind=="sitemapindex" else "page"
+        for node in root:
+            values={local(child.tag):("".join(child.itertext()).strip()) for child in node}
+            if values.get("loc"):
+                output.append({"kind":child_kind,"url":values["loc"],"title":"","description":"","published":values.get("lastmod")})
+        return output
+    for node in root.iter():
+        if local(node.tag) not in {"item","entry"}: continue
+        values={}
+        for child in node:
+            name=local(child.tag)
+            if name=="link": values[name]=child.attrib.get("href") or (child.text or "")
+            else: values[name]=" ".join("".join(child.itertext()).split())
+        url=values.get("link") or values.get("guid")
+        if url:
+            output.append({"kind":"page","url":url,"title":values.get("title",""),"description":values.get("description") or values.get("summary") or values.get("content","") ,"published":values.get("published") or values.get("updated") or values.get("pubdate")})
+    return output
 
 
 def _public_ip(host):
@@ -230,6 +263,107 @@ class TavilyPublicWebCollector:
             evidence.append("Contact visibly present in Tavily-extracted public source content" if phone else "Public source discovered through Tavily")
             output.append(Listing(source=host or "tavily",source_id=url,url=url,title=item.get("title") or "Public property listing",description=text,locality=query.locality,property_type="plot" if re.search(r"\b(plot|land|site)\b",text,re.I) else "unknown",price=_price(text),area_sqft=_area(text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",text,re.I) else None,original_posted_at=posted_at,date_confidence=date_confidence,date_status="verified_recent" if posted_at and posted_at.date()>=datetime.fromisoformat(cutoff).date() else "expired" if posted_at else "unverified",evidence=evidence))
         return output
+
+
+class DirectPublicFeedCollector:
+    """Zero-credit RSS/sitemap discovery from explicitly reviewed public sources."""
+    source_id="direct_public_feeds"
+
+    def __init__(self,sources,client=None,max_pages_per_source=30):
+        if httpx is None:
+            raise RuntimeError("Install project dependencies before enabling direct feeds")
+        self.sources=[source for source in sources if source.get("enabled")]
+        self.max_pages_per_source=max_pages_per_source
+        self._robots_cache={}
+        self.client=client or httpx.AsyncClient(timeout=20,follow_redirects=True,headers={"User-Agent":"OwnerPlotFinder/0.2 (+public-feed-monitoring)"})
+
+    @classmethod
+    def from_environment(cls):
+        path=Path(os.getenv("DIRECT_SOURCES_CONFIG",Path(__file__).resolve().parents[2]/"config"/"direct-sources.yaml"))
+        try: payload=yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except (OSError,yaml.YAMLError): return None
+        sources=payload.get("sources") or []
+        return cls(sources) if any(source.get("enabled") for source in sources) else None
+
+    @staticmethod
+    def _host_allowed(url,domains):
+        parsed=urlparse(url); host=(parsed.hostname or "").lower().removeprefix("www.")
+        return parsed.scheme=="https" and any(host==domain or host.endswith(f".{domain}") for domain in domains)
+
+    async def _robots_allowed(self,url):
+        parsed=urlparse(url); robots_url=f"{parsed.scheme}://{parsed.netloc}/robots.txt"
+        cached=self._robots_cache.get(robots_url)
+        if cached is not None:
+            return cached is True or cached.can_fetch("OwnerPlotFinder",url)
+        try:
+            response=await self.client.get(robots_url)
+            if response.status_code in {401,403}:
+                self._robots_cache[robots_url]=False; return False
+            if response.status_code==404:
+                self._robots_cache[robots_url]=True; return True
+            if response.status_code>=400:
+                self._robots_cache[robots_url]=False; return False
+            parser=RobotFileParser(); parser.set_url(robots_url); parser.parse(response.text.splitlines())
+            self._robots_cache[robots_url]=parser
+            return parser.can_fetch("OwnerPlotFinder",url)
+        except httpx.HTTPError:
+            self._robots_cache[robots_url]=False; return False
+
+    async def _feed_entries(self,source):
+        domains={value.lower().removeprefix("www.") for value in source.get("allowed_domains",[])}
+        pending=[(url,source.get("kind","rss")) for url in source.get("urls",[]) if self._host_allowed(url,domains)]
+        pages=[]; visited=set()
+        while pending and len(visited)<10:
+            url,kind=pending.pop(0)
+            if url in visited: continue
+            visited.add(url)
+            try:
+                response=await self.client.get(url); response.raise_for_status()
+            except httpx.HTTPError: continue
+            for entry in _xml_entries(response.text):
+                if not self._host_allowed(entry["url"],domains): continue
+                if entry["kind"]=="sitemap": pending.append((entry["url"],"sitemap"))
+                else: pages.append(entry)
+        return pages[:self.max_pages_per_source]
+
+    async def search(self,query):
+        cutoff=datetime.now(timezone.utc)-timedelta(days=query.max_age_days)
+        wanted=set(re.findall(r"[a-z0-9]+",query.locality.lower()))
+        feed_batches=await asyncio.gather(*(self._feed_entries(source) for source in self.sources),return_exceptions=True)
+        semaphore=asyncio.Semaphore(5)
+
+        async def process(source,entry):
+          async with semaphore:
+            domains={value.lower().removeprefix("www.") for value in source.get("allowed_domains",[])}
+            metadata_text=" ".join([entry.get("title", ""),entry.get("description", ""),entry["url"]])
+            posted,date_confidence,date_evidence=_original_post_date(metadata_text,entry.get("published"))
+            if posted and posted<cutoff: return None
+            metadata_tokens=set(re.findall(r"[a-z0-9]+",metadata_text.lower()))
+            if wanted and wanted<=metadata_tokens:
+                page_text=metadata_text; title=entry.get("title") or "Public property update"
+            else:
+                if not await self._robots_allowed(entry["url"]): return None
+                try:
+                    page=await self.client.get(entry["url"]); page.raise_for_status()
+                except httpx.HTTPError: return None
+                final=str(page.url)
+                if not self._host_allowed(final,domains) or urlparse(final).path in {"","/"}: return None
+                if "text/html" not in page.headers.get("content-type",""): return None
+                parser=_TextExtractor(); parser.feed(page.text[:2_000_000])
+                page_text=" ".join(parser.parts)[:20_000]; title=parser.title or entry.get("title") or "Public property update"
+            if not wanted<=set(re.findall(r"[a-z0-9]+",page_text.lower())): return None
+            if not re.search(r"\b(plot|land|site|residential)\b",page_text,re.I): return None
+            phone=_phone(page_text)
+            evidence=[f"Zero-credit direct {source.get('kind','feed')} source",date_evidence,"Exact public source URL retained"]
+            if phone: evidence.append("Contact visibly published on direct source")
+            return Listing(source=source["id"],source_id=entry["url"],url=entry["url"],title=title,description=page_text,locality=query.locality,property_type="plot",price=_price(page_text),area_sqft=_area(page_text),phone=phone,phone_public=bool(phone),seller_claim="owner" if re.search(r"\b(owner|no brokerage|direct owner|individual)\b",page_text,re.I) else None,original_posted_at=posted,date_confidence=date_confidence,date_status="verified_recent" if posted else "unverified",evidence=evidence)
+
+        tasks=[]
+        for source,batch in zip(self.sources,feed_batches):
+            if isinstance(batch,BaseException): continue
+            tasks.extend(process(source,entry) for entry in batch)
+        results=await asyncio.gather(*tasks,return_exceptions=True)
+        return [item for item in results if isinstance(item,Listing)]
 
 
 class EmptyCollector:

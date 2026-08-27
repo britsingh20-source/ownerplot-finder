@@ -8,7 +8,7 @@ from pathlib import Path
 
 import httpx
 
-from .collectors import TavilyPublicWebCollector
+from .collectors import DirectPublicFeedCollector, TavilyPublicWebCollector
 from .processing import deduplicate, fingerprint
 from .query import parse_query
 from .service import SearchService, format_results
@@ -17,7 +17,8 @@ from .service import SearchService, format_results
 ROOT = Path(__file__).resolve().parents[2]
 STATE_PATH = ROOT / "data" / "state.json"
 LOCALITIES_PATH = ROOT / "config" / "coimbatore-localities.txt"
-PROFILES=("public_contacts","portals","local_sites")
+DISCOVERY_PROFILES=("public_contacts","portals","local_sites")
+PROFILES=("direct_sources",)+DISCOVERY_PROFILES
 
 
 def load_state() -> dict:
@@ -34,15 +35,19 @@ def save_state(state: dict) -> None:
 
 
 def service_from_environment(profile: str) -> SearchService:
-    collector = TavilyPublicWebCollector.from_environment(profile=profile)
+    collector = DirectPublicFeedCollector.from_environment() if profile=="direct_sources" else TavilyPublicWebCollector.from_environment(profile=profile)
     if collector is None:
-        raise RuntimeError("TAVILY_API_KEY and the reviewed public-domain registry are required")
+        raise RuntimeError(f"Collector configuration is unavailable for {profile}")
     return SearchService([collector])
 
 
 async def search_profiles(query,profiles=PROFILES):
-    batches=await asyncio.gather(*(service_from_environment(profile).search(query,force_refresh=True) for profile in profiles))
-    return deduplicate([item for batch in batches for item in batch])
+    batches=await asyncio.gather(*(service_from_environment(profile).search(query,force_refresh=True) for profile in profiles),return_exceptions=True)
+    successful=[batch for batch in batches if not isinstance(batch,BaseException)]
+    if not successful:
+        first=batches[0]
+        raise RuntimeError(f"All configured search profiles failed: {first}")
+    return deduplicate([item for batch in successful for item in batch])
 
 
 def authorized_chat(chat_id: int) -> bool:
@@ -79,9 +84,9 @@ async def scan(localities: list[str], notify: bool = True, rotate: bool = False,
     state = load_state()
     jobs=[]
     if rotate and localities:
-        total=len(localities)*len(PROFILES)
+        total=len(localities)*len(DISCOVERY_PROFILES)
         cursor=int(state.get("scan_cursor",0))%total
-        jobs=[(localities[cursor//len(PROFILES)],(PROFILES[cursor%len(PROFILES)],))]
+        jobs=[(localities[cursor//len(DISCOVERY_PROFILES)],("direct_sources",DISCOVERY_PROFILES[cursor%len(DISCOVERY_PROFILES)]))]
         state["scan_cursor"]=(cursor+1)%total
     else:
         jobs=[(locality,PROFILES) for locality in localities]

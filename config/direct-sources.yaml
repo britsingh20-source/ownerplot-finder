@@ -1,0 +1,14 @@
+sources:
+  - id: ezhil_veedu_youtube
+    enabled: true
+    kind: rss
+    urls:
+      - https://www.youtube.com/feeds/videos.xml?channel_id=UCVOurNMVBIb1-eiRtixJlfw
+    allowed_domains: [youtube.com]
+
+  - id: sri_sastha_properties
+    enabled: true
+    kind: sitemap
+    urls:
+      - https://srisasthabuilders.com/property-sitemap.xml
+    allowed_domains: [srisasthabuilders.com]

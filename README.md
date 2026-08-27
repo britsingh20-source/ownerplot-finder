@@ -54,6 +54,10 @@ Owner labels are not trusted by themselves. Each result records the original pub
 - Histories containing 25 or more advertisements are classified as broker/promoter even when the text claims direct ownership.
 - Listings with a proven date older than 90 days are excluded. Listings without a provable original date are labelled unverified in Telegram instead of being presented as recent.
 
+## Zero-credit direct monitoring
+
+`config/direct-sources.yaml` contains explicitly reviewed RSS and sitemap endpoints. Every scheduled run checks these direct sources first, parses original publish/last-modified dates, retains exact source URLs, applies the same 90-day/locality/owner filters, and then uses a search-provider profile only as optional discovery. A depleted Tavily account therefore no longer stops direct-source monitoring.
+
 ## Local quick start
 
 1. Copy `.env.example` to `.env` and add the Telegram token.

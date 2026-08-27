@@ -5,7 +5,7 @@ from ownerplot.domain import Listing, SellerType
 from ownerplot.policy import enforce_contact_policy
 from ownerplot.processing import analyze_seller_history, classify_seller, deduplicate, normalize_phone, validate_locality
 from ownerplot.query import parse_query
-from ownerplot.collectors import _area, _original_post_date, _phone, _price
+from ownerplot.collectors import _area, _original_post_date, _phone, _price, _xml_entries
 from datetime import datetime, timezone
 from ownerplot.cache import WatchStore
 
@@ -46,6 +46,12 @@ class CoreTests(unittest.TestCase):
         value,confidence,_=_original_post_date("Posted 3 days ago",now=now)
         self.assertEqual(value.date().isoformat(),"2026-08-24")
         self.assertEqual(confidence,80)
+
+    def test_rss_and_sitemap_parsing(self):
+        rss="""<rss><channel><item><title>Kalapatti plot</title><link>https://example.test/p/1</link><pubDate>Wed, 26 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>"""
+        sitemap="""<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.test/p/2</loc><lastmod>2026-08-25</lastmod></url></urlset>"""
+        self.assertEqual(_xml_entries(rss)[0]["title"],"Kalapatti plot")
+        self.assertEqual(_xml_entries(sitemap)[0]["published"],"2026-08-25")
 
     def test_private_phone_removed(self):
         item = enforce_contact_policy(listing(phone_public=False))
