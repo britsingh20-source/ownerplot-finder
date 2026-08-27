@@ -36,9 +36,9 @@ Results <- Telegram formatter <- Deduplication <- Normalization
 
 ## GitHub Actions activation
 
-Add repository secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `GOOGLE_CSE_API_KEY`, and `GOOGLE_CSE_ID`. The reviewed-domain defaults are stored in `config/allowed-public-domains.txt`; an `ALLOWED_PUBLIC_DOMAINS` repository variable can override them with a comma-separated list. Add the same domains to the Google Programmable Search Engine. GitHub supplies `GITHUB_TOKEN` automatically.
+Add repository secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, and `TAVILY_API_KEY`. The reviewed-domain defaults are stored in `config/allowed-public-domains.txt`; an `ALLOWED_PUBLIC_DOMAINS` repository variable can override them with a comma-separated list. GitHub supplies `GITHUB_TOKEN` automatically.
 
-`monitor.yml` scans a rotating batch of four Coimbatore localities hourly and alerts only after each locality has a baseline. Set the optional `SCAN_BATCH_SIZE` repository variable to tune quota use. `telegram-commands.yml` checks Telegram every five minutes, so command replies are normally delayed by up to five minutes.
+`monitor.yml` scans one rotating Coimbatore locality hourly and alerts only after each locality has a baseline, keeping normal monthly usage within Tavily's free credits. `telegram-commands.yml` checks Telegram every five minutes, so command replies are normally delayed by up to five minutes.
 
 ## Local quick start
 
