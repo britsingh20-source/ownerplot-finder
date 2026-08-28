@@ -13,10 +13,11 @@ from .github_runner import search_profiles, send_message
 from .portal_seeds import PortalOwnerSeedCollector
 from .processing import deduplicate
 from .query import parse_query
+from .realestateindia_collector import RealEstateIndiaOwnerCollector
 from .seed_cleanup import clean_seed_owner_names
 
-PORTAL_HOSTS = {"magicbricks.com", "99acres.com"}
-HARD_CONTACT_ANCHORS = ("same owner name", "same dimensions", "same visible phone prefix", "same property image", "same property via exact portal listing")
+PORTAL_HOSTS = {"realestateindia.com", "magicbricks.com", "99acres.com"}
+HARD_CONTACT_ANCHORS = ("same owner name", "same dimensions", "same visible phone prefix", "same property image", "same property via exact portal listing", "same property via exact realestateindia listing")
 
 def _host(url: str) -> str:
     return (urlparse(url).hostname or "").lower().removeprefix("www.")
@@ -44,61 +45,79 @@ def _reject_weak_contacts(seeds: list) -> list:
 
 def _priority(item) -> tuple:
     area = item.area_sqft or 0
-    target_size = 1 if 1700 <= area <= 2700 else 0
+    target_size = 1 if 1200 <= area <= 3000 else 0
     named_owner = 1 if item.seller_claim and item.seller_claim.lower() not in {"owner", "individual"} else 0
-    detail_url = 1 if "propertydetails" in item.url.lower() or "-npffid" in item.url.lower() else 0
+    realestateindia = 1 if _host(item.url).endswith("realestateindia.com") else 0
+    detail_url = 1 if "property-detail" in item.url.lower() or "propertydetails" in item.url.lower() or "-npffid" in item.url.lower() else 0
+    direct_rei = 1 if item.contact_verification == "realestateindia_public_owner_contact" else 0
     portal_native = 1 if item.contact_verification == "portal_native_public_contact" else 0
-    return (portal_native, detail_url, target_size, named_owner, item.owner_confidence)
+    return (direct_rei, portal_native, realestateindia, detail_url, target_size, named_owner, item.owner_confidence)
 
 def _format_contact_first(locality: str, seeds: list) -> str:
     resolved = [item for item in seeds if item.phone and item.phone_public and _has_hard_contact_anchor(item)]
+    rei_resolved = [item for item in resolved if item.contact_verification == "realestateindia_public_owner_contact"]
     portal_native = [item for item in resolved if item.contact_verification == "portal_native_public_contact"]
     unresolved = [item for item in seeds if not item.phone]
-    exact_details = sum(1 for item in seeds if "propertydetails" in item.url.lower() or "-npffid" in item.url.lower())
-    lines = ["OWNERPLOT TWO-ENGINE CONTACT SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}", "Exact-detail resolver first; Engine A inspects explicit structured contact fields on the exact portal detail page. Engine B uses public cross-post and image correlation fallback.", "No OTP/CAPTCHA/subscription bypass is used; a phone is shown only if the exact portal detail data explicitly exposes it or a hard cross-post anchor validates it.", f"Portal owner seeds: {len(seeds)} · Exact detail URLs: {exact_details} · Portal-native contacts: {len(portal_native)} · Total hard-anchored contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}"]
+    rei_seeds = [item for item in seeds if _host(item.url).endswith("realestateindia.com")]
+    exact_details = sum(1 for item in seeds if "property-detail" in item.url.lower() or "propertydetails" in item.url.lower() or "-npffid" in item.url.lower())
+    lines = ["OWNERPLOT CONTACT-FIRST SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}", "RealEstateIndia is searched first for direct-owner/individual plot listings and public contact evidence; MagicBricks/99acres then supplement the seed pool. Structured portal contact, public cross-post and image correlation are fallbacks.", "No OTP/CAPTCHA/subscription bypass is used; a phone is shown only if publicly exposed on the exact property or validated with a hard same-owner/property anchor.", f"RealEstateIndia seeds: {len(rei_seeds)} · Total owner seeds: {len(seeds)} · Exact detail URLs: {exact_details} · RealEstateIndia direct public contacts: {len(rei_resolved)} · Portal-native contacts: {len(portal_native)} · Total hard-anchored contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}"]
     if not seeds:
-        lines.append("No individual MagicBricks/99acres owner listings were found in this run."); return "\n".join(lines)
-    for index, item in enumerate(sorted(seeds, key=_priority, reverse=True)[:12], 1):
+        lines.append("No qualifying owner listings were found in this run."); return "\n".join(lines)
+    for index, item in enumerate(sorted(seeds, key=_priority, reverse=True)[:15], 1):
         price = f"₹{item.price/100_000:g} lakh" if item.price else "Price not stated"
         area = f"{item.area_sqft:g} sq.ft." if item.area_sqft else "Area not stated"
         owner = item.seller_claim if item.seller_claim and item.seller_claim.lower() != "owner" else "Owner-labelled"
         if item.phone and item.phone_public and _has_hard_contact_anchor(item):
-            label = "PORTAL-NATIVE PUBLIC OWNER CONTACT" if item.contact_verification == "portal_native_public_contact" else "HARD-ANCHORED PUBLIC OWNER CONTACT"
+            if item.contact_verification == "realestateindia_public_owner_contact": label = "REALESTATEINDIA PUBLIC OWNER CONTACT"
+            elif item.contact_verification == "portal_native_public_contact": label = "PORTAL-NATIVE PUBLIC OWNER CONTACT"
+            else: label = "HARD-ANCHORED PUBLIC OWNER CONTACT"
             contact = f"{label}: {item.phone}"
         else:
             contact = "UNRESOLVED — no qualifying public phone matched yet"
         lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Portal: {_host(item.url)} · Advertiser: {owner}", f"Contact: {contact}", f"Source: {item.url}"])
-        diagnostics = [e for e in item.evidence if e.startswith("Exact-detail") or e.startswith("Portal-native") or e.startswith("portal-native") or e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property")]
+        diagnostics = [e for e in item.evidence if e.startswith("RealEstateIndia") or e.startswith("Exact-detail") or e.startswith("Portal-native") or e.startswith("portal-native") or e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property")]
         for evidence in diagnostics[-10:]: lines.append(f"Evidence: {evidence}")
     return "\n".join(lines)
 
 async def run(locality: str, telegram: bool = False) -> str:
     query = parse_query(f"plots in {locality}")
+    seeds = []
+
+    rei_collector = RealEstateIndiaOwnerCollector.from_environment()
+    if rei_collector is not None:
+        seeds.extend(await rei_collector.search(locality))
+
     detail_collector = PortalOwnerSeedCollector.from_environment()
-    detail_seeds = await detail_collector.search(locality) if detail_collector is not None else []
-    if detail_seeds:
-        seeds = detail_seeds
-    else:
-        portal_results = await search_profiles(query, profiles=("portals",))
+    if detail_collector is not None:
+        seeds.extend(await detail_collector.search(locality))
+
+    if not seeds:
+        portal_results = await search_profiles(query, profiles=("portals", "public_contacts"))
         seeds = [item for item in portal_results if _owner_seed(item)]
-    seeds = clean_seed_owner_names(deduplicate(seeds))
+
+    seeds = [item for item in clean_seed_owner_names(deduplicate(seeds)) if _owner_seed(item)]
+
     exact_resolver = ExactPortalDetailResolver()
     if seeds: seeds = await exact_resolver.enrich(seeds)
+
     native_resolver = PortalNativeContactResolver()
     if seeds: seeds = await native_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
+
     text_resolver = PublicOwnerContactResolver.from_environment()
     if text_resolver is not None and seeds: seeds = await text_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
+
     image_resolver = PropertyImageContactResolver.from_environment()
     if image_resolver is not None and seeds: seeds = await image_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
+
     message = _format_contact_first(locality, seeds)
     if telegram: await send_message(message)
     return message
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Resolve publicly exposed contacts for MagicBricks/99acres owner listings")
+    parser = argparse.ArgumentParser(description="Resolve publicly exposed contacts for RealEstateIndia/MagicBricks/99acres owner listings")
     parser.add_argument("--locality", default="Kalapatti"); parser.add_argument("--telegram", action="store_true"); args = parser.parse_args()
     print(asyncio.run(run(args.locality, telegram=args.telegram)))
 
