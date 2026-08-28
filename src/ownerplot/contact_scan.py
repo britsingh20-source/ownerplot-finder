@@ -11,6 +11,7 @@ from .github_runner import search_profiles, send_message
 from .portal_seeds import PortalOwnerSeedCollector
 from .processing import deduplicate
 from .query import parse_query
+from .seed_cleanup import clean_seed_owner_names
 
 
 PORTAL_HOSTS = {"magicbricks.com", "99acres.com"}
@@ -85,14 +86,13 @@ async def run(locality: str, telegram: bool = False) -> str:
     else:
         portal_results = await search_profiles(query, profiles=("portals",))
         seeds = [item for item in portal_results if _owner_seed(item) and ("propertydetails" in item.url.lower() or "-npffid" in item.url.lower())]
-    seeds = deduplicate(seeds)
+    seeds = clean_seed_owner_names(deduplicate(seeds))
 
     text_resolver = PublicOwnerContactResolver.from_environment()
     if text_resolver is not None and seeds:
         seeds = await text_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
 
-    # Second pass: unresolved seeds can be linked to a public phone by near-identical property photos.
     image_resolver = PropertyImageContactResolver.from_environment()
     if image_resolver is not None and seeds:
         seeds = await image_resolver.enrich(seeds)
