@@ -53,14 +53,27 @@ def service_from_environment(profile: str) -> SearchService:
 
 
 async def search_profiles(query,profiles=PROFILES):
-    batches=await asyncio.gather(*(service_from_environment(profile).search(query,force_refresh=True) for profile in profiles),return_exceptions=True)
+    configured=[]
+    skipped=[]
+    for profile in profiles:
+        try:
+            configured.append((profile, service_from_environment(profile)))
+        except RuntimeError:
+            skipped.append(profile)
+    if not configured:
+        raise RuntimeError("No configured search profiles are available")
+    batches=await asyncio.gather(*(service.search(query,force_refresh=True) for _,service in configured),return_exceptions=True)
     successful=[batch for batch in batches if not isinstance(batch,BaseException)]
     if not successful:
-        first=batches[0]
+        first=next((batch for batch in batches if isinstance(batch,BaseException)), RuntimeError("unknown collector failure"))
         raise RuntimeError(f"All configured search profiles failed: {first}")
     correlated=correlate_public_contacts([item for batch in successful for item in batch])
     enriched=enrich_authorized_contacts(correlated,load_state())
-    return deduplicate(enriched)
+    results=deduplicate(enriched)
+    if skipped:
+        for item in results:
+            item.evidence.append("Optional profiles unavailable: " + ", ".join(skipped))
+    return results
 
 
 def authorized_chat(chat_id: int) -> bool:
