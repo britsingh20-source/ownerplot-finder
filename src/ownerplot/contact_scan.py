@@ -5,6 +5,7 @@ import asyncio
 from urllib.parse import urlparse
 
 from .contact_resolver import PublicOwnerContactResolver
+from .image_contact_resolver import PropertyImageContactResolver
 from .domain import SellerType
 from .github_runner import search_profiles, send_message
 from .portal_seeds import PortalOwnerSeedCollector
@@ -26,14 +27,10 @@ def _is_primary_portal(url: str) -> bool:
 
 
 def _owner_seed(item) -> bool:
-    if not _is_primary_portal(item.url):
-        return False
-    if item.seller_type in {SellerType.BROKER, SellerType.BUILDER}:
-        return False
+    if not _is_primary_portal(item.url): return False
+    if item.seller_type in {SellerType.BROKER, SellerType.BUILDER}: return False
     text = f"{item.seller_claim or ''} {item.title} {item.description}".lower()
-    return item.seller_type in {SellerType.PROBABLE_OWNER, SellerType.VERIFIED_OWNER} or any(
-        marker in text for marker in ("contact owner", "posted by owner", "owner property", "individual", "owner")
-    )
+    return item.seller_type in {SellerType.PROBABLE_OWNER, SellerType.VERIFIED_OWNER} or any(marker in text for marker in ("contact owner", "posted by owner", "owner property", "individual", "owner"))
 
 
 def _has_hard_contact_anchor(item) -> bool:
@@ -45,9 +42,7 @@ def _reject_weak_contacts(seeds: list) -> list:
     for item in seeds:
         if item.phone and item.phone_public and not _has_hard_contact_anchor(item):
             item.evidence.append(f"Rejected public phone {item.phone}: no hard owner/property anchor")
-            item.phone = None
-            item.phone_public = False
-            item.contact_verification = "weak_cross_post_rejected"
+            item.phone = None; item.phone_public = False; item.contact_verification = "weak_cross_post_rejected"
     return seeds
 
 
@@ -63,28 +58,21 @@ def _format_contact_first(locality: str, seeds: list) -> str:
     resolved = [item for item in seeds if item.phone and item.phone_public and _has_hard_contact_anchor(item)]
     unresolved = [item for item in seeds if not item.phone]
     lines = [
-        "OWNERPLOT CONTACT-FIRST SEARCH",
-        "",
-        f"PRIMARY OWNER SEEDS — {locality.upper()}",
+        "OWNERPLOT CONTACT-FIRST SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}",
         "Only MagicBricks/99acres owner-posted listings are shown. Public donor sources never become owner results by themselves.",
         "A phone is shown only with a hard anchor: same owner name, dimensions, visible phone prefix, or same property image.",
         f"Portal owner seeds: {len(seeds)} · Hard-anchored public owner contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}",
     ]
     if not seeds:
-        lines.append("No individual MagicBricks/99acres owner listings were found in this run.")
-        return "\n".join(lines)
+        lines.append("No individual MagicBricks/99acres owner listings were found in this run."); return "\n".join(lines)
     for index, item in enumerate(sorted(seeds, key=_priority, reverse=True)[:12], 1):
         price = f"₹{item.price/100_000:g} lakh" if item.price else "Price not stated"
         area = f"{item.area_sqft:g} sq.ft." if item.area_sqft else "Area not stated"
         owner = item.seller_claim if item.seller_claim and item.seller_claim.lower() != "owner" else "Owner-labelled"
         contact = f"HARD-ANCHORED PUBLIC OWNER CONTACT: {item.phone}" if item.phone and item.phone_public and _has_hard_contact_anchor(item) else "UNRESOLVED — no hard-anchored public phone matched yet"
-        lines.extend([
-            "", f"{index}. {item.title}", f"{area} · {price}",
-            f"Portal: {_host(item.url)} · Advertiser: {owner}", f"Contact: {contact}", f"Source: {item.url}",
-        ])
-        diagnostics = [e for e in item.evidence if e.startswith("Contact hunt checked") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone")]
-        for evidence in diagnostics[-4:]:
-            lines.append(f"Evidence: {evidence}")
+        lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Portal: {_host(item.url)} · Advertiser: {owner}", f"Contact: {contact}", f"Source: {item.url}"])
+        diagnostics = [e for e in item.evidence if e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property image")]
+        for evidence in diagnostics[-5:]: lines.append(f"Evidence: {evidence}")
     return "\n".join(lines)
 
 
@@ -98,23 +86,27 @@ async def run(locality: str, telegram: bool = False) -> str:
         portal_results = await search_profiles(query, profiles=("portals",))
         seeds = [item for item in portal_results if _owner_seed(item) and ("propertydetails" in item.url.lower() or "-npffid" in item.url.lower())]
     seeds = deduplicate(seeds)
-    resolver = PublicOwnerContactResolver.from_environment()
-    if resolver is not None and seeds:
-        seeds = await resolver.enrich(seeds)
+
+    text_resolver = PublicOwnerContactResolver.from_environment()
+    if text_resolver is not None and seeds:
+        seeds = await text_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
+
+    # Second pass: unresolved seeds can be linked to a public phone by near-identical property photos.
+    image_resolver = PropertyImageContactResolver.from_environment()
+    if image_resolver is not None and seeds:
+        seeds = await image_resolver.enrich(seeds)
+    seeds = _reject_weak_contacts(deduplicate(seeds))
+
     message = _format_contact_first(locality, seeds)
-    if telegram:
-        await send_message(message)
+    if telegram: await send_message(message)
     return message
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Resolve publicly exposed contacts for MagicBricks/99acres owner listings")
-    parser.add_argument("--locality", default="Kalapatti")
-    parser.add_argument("--telegram", action="store_true")
-    args = parser.parse_args()
+    parser.add_argument("--locality", default="Kalapatti"); parser.add_argument("--telegram", action="store_true"); args = parser.parse_args()
     print(asyncio.run(run(args.locality, telegram=args.telegram)))
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
