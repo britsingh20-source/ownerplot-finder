@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from .contact_resolver import PublicOwnerContactResolver
 from .domain import SellerType
 from .github_runner import search_profiles, send_message
+from .portal_seeds import PortalOwnerSeedCollector
 from .processing import deduplicate
 from .query import parse_query
 
@@ -41,15 +42,16 @@ def _format_contact_first(locality: str, seeds: list) -> str:
         "OWNERPLOT CONTACT-FIRST SEARCH",
         "",
         f"PRIMARY OWNER SEEDS — {locality.upper()}",
-        "Only MagicBricks/99acres owner-posted listings are shown. Other public websites/social sources are contact donors only.",
+        "Only MagicBricks/99acres owner-posted detail listings are shown. Other public websites/social sources are contact donors only.",
         f"Portal owner seeds: {len(seeds)} · Resolved public owner contacts: {len(resolved)} · Unresolved: {len(unresolved)}",
     ]
     if not seeds:
-        lines.append("No MagicBricks/99acres owner seeds were returned by the configured portal discovery source.")
+        lines.append("No individual MagicBricks/99acres owner detail pages were found in this run.")
         return "\n".join(lines)
     for index, item in enumerate(seeds[:12], 1):
         price = f"₹{item.price/100_000:g} lakh" if item.price else "Price not stated"
         area = f"{item.area_sqft:g} sq.ft." if item.area_sqft else "Area not stated"
+        owner = item.seller_claim if item.seller_claim and item.seller_claim.lower() != "owner" else "Owner-labelled"
         if item.contact_verification == "public_cross_post_owner_contact" and item.phone:
             contact = f"VERIFIED/PUBLIC CROSS-POST CONTACT: {item.phone}"
         elif item.phone and item.phone_public:
@@ -60,7 +62,7 @@ def _format_contact_first(locality: str, seeds: list) -> str:
             "",
             f"{index}. {item.title}",
             f"{area} · {price}",
-            f"Portal: {_host(item.url)} · Seller: {item.seller_type.value.replace('_',' ').title()}",
+            f"Portal: {_host(item.url)} · Advertiser: {owner}",
             f"Contact: {contact}",
             f"Source: {item.url}",
         ])
@@ -72,8 +74,18 @@ def _format_contact_first(locality: str, seeds: list) -> str:
 
 async def run(locality: str, telegram: bool = False) -> str:
     query = parse_query(f"plots in {locality}")
-    portal_results = await search_profiles(query, profiles=("portals",))
-    seeds = deduplicate([item for item in portal_results if _owner_seed(item)])
+    detail_collector = PortalOwnerSeedCollector.from_environment()
+    detail_seeds = await detail_collector.search(locality) if detail_collector is not None else []
+
+    # Fallback keeps portal discovery useful if CSE misses an indexed detail page, but category pages
+    # are deliberately not allowed to displace detail-page seeds when detail seeds exist.
+    if detail_seeds:
+        seeds = detail_seeds
+    else:
+        portal_results = await search_profiles(query, profiles=("portals",))
+        seeds = [item for item in portal_results if _owner_seed(item) and ("propertydetails" in item.url.lower() or "-npffid" in item.url.lower())]
+
+    seeds = deduplicate(seeds)
     resolver = PublicOwnerContactResolver.from_environment()
     if resolver is not None and seeds:
         seeds = await resolver.enrich(seeds)
@@ -85,7 +97,7 @@ async def run(locality: str, telegram: bool = False) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Resolve publicly exposed contacts for MagicBricks/99acres owner listings")
+    parser = argparse.ArgumentParser(description="Resolve publicly exposed contacts for MagicBricks/99acres owner detail listings")
     parser.add_argument("--locality", default="Kalapatti")
     parser.add_argument("--telegram", action="store_true")
     args = parser.parse_args()
