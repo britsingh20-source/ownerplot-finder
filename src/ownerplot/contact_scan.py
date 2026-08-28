@@ -5,6 +5,7 @@ import asyncio
 from urllib.parse import urlparse
 
 from .contact_resolver import PublicOwnerContactResolver
+from .exact_detail_resolver import ExactPortalDetailResolver
 from .image_contact_resolver import PropertyImageContactResolver
 from .portal_native_contact import PortalNativeContactResolver
 from .domain import SellerType
@@ -60,18 +61,19 @@ def _priority(item) -> tuple:
     named_owner = 1 if item.seller_claim and item.seller_claim.lower() not in {"owner", "individual"} else 0
     detail_url = 1 if "propertydetails" in item.url.lower() or "-npffid" in item.url.lower() else 0
     portal_native = 1 if item.contact_verification == "portal_native_public_contact" else 0
-    return (portal_native, target_size, named_owner, detail_url, item.owner_confidence)
+    return (portal_native, detail_url, target_size, named_owner, item.owner_confidence)
 
 
 def _format_contact_first(locality: str, seeds: list) -> str:
     resolved = [item for item in seeds if item.phone and item.phone_public and _has_hard_contact_anchor(item)]
     portal_native = [item for item in resolved if item.contact_verification == "portal_native_public_contact"]
     unresolved = [item for item in seeds if not item.phone]
+    exact_details = sum(1 for item in seeds if "propertydetails" in item.url.lower() or "-npffid" in item.url.lower())
     lines = [
         "OWNERPLOT TWO-ENGINE CONTACT SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}",
-        "Engine A: exact MagicBricks/99acres public structured/page data. Engine B: public cross-post and image correlation fallback.",
-        "No OTP/CAPTCHA/subscription bypass is used; a phone is shown only if the exact portal page publicly exposes it or a hard cross-post anchor validates it.",
-        f"Portal owner seeds: {len(seeds)} · Portal-native contacts: {len(portal_native)} · Total hard-anchored contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}",
+        "Exact-detail resolver first; Engine A inspects explicit structured contact fields on the exact portal detail page. Engine B uses public cross-post and image correlation fallback.",
+        "No OTP/CAPTCHA/subscription bypass is used; a phone is shown only if the exact portal detail data explicitly exposes it or a hard cross-post anchor validates it.",
+        f"Portal owner seeds: {len(seeds)} · Exact detail URLs: {exact_details} · Portal-native contacts: {len(portal_native)} · Total hard-anchored contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}",
     ]
     if not seeds:
         lines.append("No individual MagicBricks/99acres owner listings were found in this run."); return "\n".join(lines)
@@ -85,8 +87,8 @@ def _format_contact_first(locality: str, seeds: list) -> str:
         else:
             contact = "UNRESOLVED — no qualifying public phone matched yet"
         lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Portal: {_host(item.url)} · Advertiser: {owner}", f"Contact: {contact}", f"Source: {item.url}"])
-        diagnostics = [e for e in item.evidence if e.startswith("Portal-native") or e.startswith("portal-native") or e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property")]
-        for evidence in diagnostics[-6:]: lines.append(f"Evidence: {evidence}")
+        diagnostics = [e for e in item.evidence if e.startswith("Exact-detail") or e.startswith("Portal-native") or e.startswith("portal-native") or e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property")]
+        for evidence in diagnostics[-8:]: lines.append(f"Evidence: {evidence}")
     return "\n".join(lines)
 
 
@@ -98,11 +100,15 @@ async def run(locality: str, telegram: bool = False) -> str:
         seeds = detail_seeds
     else:
         portal_results = await search_profiles(query, profiles=("portals",))
-        seeds = [item for item in portal_results if _owner_seed(item) and ("propertydetails" in item.url.lower() or "-npffid" in item.url.lower())]
+        seeds = [item for item in portal_results if _owner_seed(item)]
     seeds = clean_seed_owner_names(deduplicate(seeds))
 
-    # Engine A: exact portal page/structured payload. Highest-confidence path when a full
-    # public contact is already present in the HTTP response for this exact listing.
+    # Resolve category/overview owner cards to the exact individual MagicBricks detail URL.
+    exact_resolver = ExactPortalDetailResolver()
+    if seeds:
+        seeds = await exact_resolver.enrich(seeds)
+
+    # Engine A: explicit structured contact fields on the exact portal detail response.
     native_resolver = PortalNativeContactResolver()
     if seeds:
         seeds = await native_resolver.enrich(seeds)
