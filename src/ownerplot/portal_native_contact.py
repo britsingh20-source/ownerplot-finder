@@ -15,7 +15,7 @@ PHONE_RE = re.compile(r"(?:\+?91[\s.-]?)?([6-9](?:[\s.-]?\d){9})(?!\d)")
 MASKED_RE = re.compile(r"(?:\+?91[\s.-]?)?[6-9]\d{1,4}[xX*•]{3,}")
 JSON_SCRIPT_RE = re.compile(r"<script\b[^>]*>(.*?)</script>", re.I | re.S)
 CONTACT_KEYS = {
-    "phone", "mobile", "contact", "contactnumber", "contact_number", "mobilenumber",
+    "phone", "mobile", "contactnumber", "contact_number", "mobilenumber",
     "mobile_number", "ownerphone", "owner_phone", "sellerphone", "seller_phone",
     "advertiserphone", "advertiser_phone", "primaryphone", "primary_phone",
 }
@@ -31,11 +31,20 @@ def _portal(url: str) -> bool:
     return host in PORTAL_HOSTS or any(host.endswith(f".{domain}") for domain in PORTAL_HOSTS)
 
 
+def _individual_detail_url(url: str) -> bool:
+    host = _host(url)
+    path = urlparse(url).path.lower()
+    if host.endswith("magicbricks.com"):
+        return "propertydetails" in path
+    if host.endswith("99acres.com"):
+        return "-npffid" in path and not path.endswith("-ffid")
+    return False
+
+
 def _walk_json(value, path: tuple[str, ...] = ()):
     if isinstance(value, dict):
         for key, child in value.items():
-            key_s = str(key)
-            yield from _walk_json(child, (*path, key_s))
+            yield from _walk_json(child, (*path, str(key)))
     elif isinstance(value, list):
         for idx, child in enumerate(value):
             yield from _walk_json(child, (*path, str(idx)))
@@ -44,8 +53,7 @@ def _walk_json(value, path: tuple[str, ...] = ()):
 
 
 def _phones_from_value(value) -> set[str]:
-    text = str(value or "")
-    phones = {normalize_phone(m.group(0)) for m in PHONE_RE.finditer(text)}
+    phones = {normalize_phone(m.group(0)) for m in PHONE_RE.finditer(str(value or ""))}
     phones.discard(None)
     return phones
 
@@ -70,22 +78,25 @@ class PortalNativeFinding:
 
 
 class PortalNativeContactResolver:
-    """Extract complete contacts that the exact public portal page already exposes.
+    """Read only complete contacts explicitly exposed in structured data on an individual portal detail page.
 
-    This deliberately does not bypass login, OTP, CAPTCHA, subscription, or reveal controls.
-    It only reads the public HTTP response returned for the listing URL and structured payloads
-    embedded in that response.
+    Category/overview pages and arbitrary HTML phone strings are intentionally rejected because they can
+    contain support numbers, advertiser numbers for other cards, or unrelated page furniture.
+    No login, OTP, CAPTCHA, subscription, reveal, or protected endpoint is bypassed.
     """
 
     def __init__(self, client: httpx.AsyncClient | None = None) -> None:
         self.client = client or httpx.AsyncClient(
             timeout=20,
             follow_redirects=True,
-            headers={"User-Agent": "OwnerPlotFinder/0.8 (+portal-native-public-data)"},
+            headers={"User-Agent": "OwnerPlotFinder/0.9 (+portal-native-public-data)"},
         )
 
     async def _resolve_one(self, listing: Listing) -> PortalNativeFinding | None:
         if not _portal(listing.url):
+            return None
+        if not _individual_detail_url(listing.url):
+            listing.evidence.append("Portal-native probe skipped: not an individual property detail URL")
             return None
         try:
             response = await self.client.get(listing.url)
@@ -101,33 +112,23 @@ class PortalNativeContactResolver:
             listing.evidence.append("Portal-native probe: unsupported response type")
             return None
 
-        text = response.text
         candidates: list[tuple[str, list[str]]] = []
-
-        # 1) Structured JSON embedded by SSR/Next/JSON-LD or equivalent.
-        for blob in _extract_json_blobs(text):
+        for blob in _extract_json_blobs(response.text):
             for path, value in _walk_json(blob):
-                key = (path[-1] if path else "").lower().replace("-", "").replace(" ", "")
-                normalized_key = key.replace("_", "")
-                if normalized_key in {k.replace("_", "") for k in CONTACT_KEYS}:
-                    for phone in _phones_from_value(value):
-                        candidates.append((phone, [f"portal-native structured field: {'.'.join(path)}"]))
-
-        # 2) Public page text fallback. Exact-listing page itself is a hard property anchor.
-        visible_phones = {normalize_phone(m.group(0)) for m in PHONE_RE.finditer(text)}
-        visible_phones.discard(None)
-        for phone in visible_phones:
-            candidates.append((phone, ["portal-native exact listing page exposed complete phone"]))
+                key = (path[-1] if path else "").lower().replace("-", "").replace(" ", "").replace("_", "")
+                allowed = {k.replace("_", "") for k in CONTACT_KEYS}
+                if key not in allowed:
+                    continue
+                for phone in _phones_from_value(value):
+                    candidates.append((phone, [f"portal-native structured contact field: {'.'.join(path)}"]))
 
         if not candidates:
-            masked = bool(MASKED_RE.search(text))
+            masked = bool(MASKED_RE.search(response.text))
             listing.evidence.append(
-                "Portal-native probe: no complete public phone" + ("; masked contact detected" if masked else "")
+                "Portal-native probe: no complete structured public phone" + ("; masked contact detected" if masked else "")
             )
             return None
 
-        # Prefer structured contact fields over arbitrary page-text matches.
-        candidates.sort(key=lambda item: 0 if any("structured field" in e for e in item[1]) else 1)
         phone, evidence = candidates[0]
         return PortalNativeFinding(phone=phone, evidence=evidence)
 
