@@ -19,7 +19,7 @@ CONTACT_KEYS = {
     "mobile_number", "ownerphone", "owner_phone", "sellerphone", "seller_phone",
     "advertiserphone", "advertiser_phone", "primaryphone", "primary_phone",
 }
-PORTAL_HOSTS = {"magicbricks.com", "99acres.com"}
+PORTAL_HOSTS = {"realestateindia.com", "magicbricks.com", "99acres.com"}
 
 
 def _host(url: str) -> str:
@@ -33,6 +33,9 @@ def _portal(url: str) -> bool:
 
 def _detail_page(url: str) -> bool:
     lower = url.lower()
+    host = _host(url)
+    if host.endswith("realestateindia.com"):
+        return "/property-detail/" in lower or lower.endswith(".htm")
     return "propertydetails" in lower or "-npffid" in lower
 
 
@@ -85,7 +88,7 @@ class PortalNativeContactResolver:
         self.client = client or httpx.AsyncClient(
             timeout=20,
             follow_redirects=True,
-            headers={"User-Agent": "Mozilla/5.0 OwnerPlotFinder/0.9"},
+            headers={"User-Agent": "Mozilla/5.0 OwnerPlotFinder/1.1"},
         )
 
     async def _resolve_one(self, listing: Listing) -> PortalNativeFinding | None:
@@ -148,5 +151,8 @@ class PortalNativeContactResolver:
             listing.contact_verification = "portal_native_public_contact"
             listing.matching_contact_sources = max(1, listing.matching_contact_sources)
             listing.evidence.extend(finding.evidence)
-            listing.evidence.append("same property via exact portal listing")
+            if _host(listing.url).endswith("realestateindia.com"):
+                listing.evidence.append("same property via exact RealEstateIndia listing")
+            else:
+                listing.evidence.append("same property via exact portal listing")
         return listings
