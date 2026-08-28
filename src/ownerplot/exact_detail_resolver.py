@@ -82,18 +82,18 @@ def _queries(seed: Listing) -> list[str]:
 class ExactPortalDetailResolver:
     """Resolve MagicBricks owner seeds to exact public propertyDetails URLs.
 
-    First follows public detail links in the category HTML. If those links are injected
-    dynamically and absent from raw HTML, it searches Google CSE and Tavily for exact
-    MagicBricks detail pages using owner/property fingerprints, then verifies candidates.
-    It never triggers contact reveal, login, OTP, CAPTCHA, or subscription controls.
+    Uses public category links first, then Google CSE/Tavily exact-detail discovery.
+    Candidate verification is bounded and parallelized. It never triggers contact reveal,
+    login, OTP, CAPTCHA, or subscription controls.
     """
 
-    def __init__(self, client: httpx.AsyncClient | None = None, max_links: int = 40) -> None:
-        self.client = client or httpx.AsyncClient(timeout=20, follow_redirects=True, headers={"User-Agent": "Mozilla/5.0 OwnerPlotFinder/1.0"})
+    def __init__(self, client: httpx.AsyncClient | None = None, max_links: int = 12, max_seed_concurrency: int = 4) -> None:
+        self.client = client or httpx.AsyncClient(timeout=12, follow_redirects=True, headers={"User-Agent": "Mozilla/5.0 OwnerPlotFinder/1.1"})
         self.max_links = max_links
         self.google_key = os.getenv("GOOGLE_CSE_API_KEY", "").strip()
         self.google_cse = os.getenv("GOOGLE_CSE_ID", "").strip()
         self.tavily_key = os.getenv("TAVILY_API_KEY", "").strip()
+        self._seed_sem = asyncio.Semaphore(max_seed_concurrency)
 
     async def _get(self, url: str) -> str:
         try:
@@ -146,58 +146,58 @@ class ExactPortalDetailResolver:
                     out.append((url, snippet))
         return out
 
+    async def _evaluate(self, seed: Listing, url: str, snippet: str) -> tuple[str, int]:
+        if _host(url) != "magicbricks.com" or "propertydetails" not in url.lower():
+            return "", 0
+        detail_html = await self._get(url)
+        combined = f"{snippet} {_text(detail_html)}" if detail_html else snippet
+        return url, _score(seed, combined)
+
     async def _pick(self, seed: Listing, candidates: list[tuple[str, str]]) -> tuple[str, int]:
-        best_url = ""
-        best_score = 0
-        for url, snippet in candidates[: self.max_links]:
-            if _host(url) != "magicbricks.com" or "propertydetails" not in url.lower():
-                continue
-            detail_html = await self._get(url)
-            combined = f"{snippet} {_text(detail_html)}" if detail_html else snippet
-            score = _score(seed, combined)
-            if score > best_score:
-                best_url, best_score = url, score
-            if score >= 80:
-                break
-        return best_url, best_score
+        selected = candidates[: self.max_links]
+        if not selected:
+            return "", 0
+        results = await asyncio.gather(*(self._evaluate(seed, url, snippet) for url, snippet in selected))
+        valid = [(url, score) for url, score in results if url]
+        return max(valid, key=lambda item: item[1]) if valid else ("", 0)
 
     async def resolve_one(self, seed: Listing) -> Listing:
-        if _host(seed.url) != "magicbricks.com" or "propertydetails" in seed.url.lower():
+        async with self._seed_sem:
+            if _host(seed.url) != "magicbricks.com" or "propertydetails" in seed.url.lower():
+                return seed
+
+            html_candidates: list[tuple[str, str]] = []
+            category_html = await self._get(seed.url)
+            if category_html:
+                seen: set[str] = set()
+                for raw in DETAIL_LINK_RE.findall(category_html):
+                    url = urljoin(seed.url, html_lib.unescape(raw))
+                    if url not in seen:
+                        seen.add(url)
+                        html_candidates.append((url, ""))
+                    if len(html_candidates) >= self.max_links:
+                        break
+            else:
+                seed.evidence.append("Exact-detail resolver: category page unavailable")
+
+            best_url, best_score = await self._pick(seed, html_candidates)
+            source = "category HTML"
+            if not best_url or best_score < 70:
+                search_candidates = await self._search_candidates(seed)
+                search_url, search_score = await self._pick(seed, search_candidates)
+                seed.evidence.append(f"Exact-detail search fallback: {len(search_candidates)} candidate detail URLs")
+                if search_score > best_score:
+                    best_url, best_score, source = search_url, search_score, "Google/Tavily"
+
+            if best_url and best_score >= 70:
+                seed.evidence.append(f"Exact-detail resolver: matched detail URL score {best_score} via {source}")
+                seed.evidence.append(f"Exact-detail URL: {best_url}")
+                seed.url = best_url
+                seed.source_id = best_url
+            else:
+                seed.evidence.append(f"Exact-detail resolver: no qualifying detail URL; best score {best_score}")
             return seed
 
-        html_candidates: list[tuple[str, str]] = []
-        category_html = await self._get(seed.url)
-        if category_html:
-            seen: set[str] = set()
-            for raw in DETAIL_LINK_RE.findall(category_html):
-                url = urljoin(seed.url, html_lib.unescape(raw))
-                if url not in seen:
-                    seen.add(url)
-                    html_candidates.append((url, ""))
-                if len(html_candidates) >= self.max_links:
-                    break
-        else:
-            seed.evidence.append("Exact-detail resolver: category page unavailable")
-
-        best_url, best_score = await self._pick(seed, html_candidates)
-        source = "category HTML"
-        if not best_url or best_score < 70:
-            search_candidates = await self._search_candidates(seed)
-            search_url, search_score = await self._pick(seed, search_candidates)
-            seed.evidence.append(f"Exact-detail search fallback: {len(search_candidates)} candidate detail URLs")
-            if search_score > best_score:
-                best_url, best_score, source = search_url, search_score, "Google/Tavily"
-
-        if best_url and best_score >= 70:
-            seed.evidence.append(f"Exact-detail resolver: matched detail URL score {best_score} via {source}")
-            seed.evidence.append(f"Exact-detail URL: {best_url}")
-            seed.url = best_url
-            seed.source_id = best_url
-        else:
-            seed.evidence.append(f"Exact-detail resolver: no qualifying detail URL; best score {best_score}")
-        return seed
-
     async def enrich(self, seeds: list[Listing]) -> list[Listing]:
-        for seed in seeds:
-            await self.resolve_one(seed)
+        await asyncio.gather(*(self.resolve_one(seed) for seed in seeds))
         return seeds
