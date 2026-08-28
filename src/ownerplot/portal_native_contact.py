@@ -15,7 +15,7 @@ PHONE_RE = re.compile(r"(?:\+?91[\s.-]?)?([6-9](?:[\s.-]?\d){9})(?!\d)")
 MASKED_RE = re.compile(r"(?:\+?91[\s.-]?)?[6-9]\d{1,4}[xX*•]{3,}")
 JSON_SCRIPT_RE = re.compile(r"<script\b[^>]*>(.*?)</script>", re.I | re.S)
 CONTACT_KEYS = {
-    "phone", "mobile", "contactnumber", "contact_number", "mobilenumber",
+    "phone", "mobile", "contact", "contactnumber", "contact_number", "mobilenumber",
     "mobile_number", "ownerphone", "owner_phone", "sellerphone", "seller_phone",
     "advertiserphone", "advertiser_phone", "primaryphone", "primary_phone",
 }
@@ -31,20 +31,16 @@ def _portal(url: str) -> bool:
     return host in PORTAL_HOSTS or any(host.endswith(f".{domain}") for domain in PORTAL_HOSTS)
 
 
-def _individual_detail_url(url: str) -> bool:
-    host = _host(url)
-    path = urlparse(url).path.lower()
-    if host.endswith("magicbricks.com"):
-        return "propertydetails" in path
-    if host.endswith("99acres.com"):
-        return "-npffid" in path and not path.endswith("-ffid")
-    return False
+def _detail_page(url: str) -> bool:
+    lower = url.lower()
+    return "propertydetails" in lower or "-npffid" in lower
 
 
 def _walk_json(value, path: tuple[str, ...] = ()):
     if isinstance(value, dict):
         for key, child in value.items():
-            yield from _walk_json(child, (*path, str(key)))
+            key_s = str(key)
+            yield from _walk_json(child, (*path, key_s))
     elif isinstance(value, list):
         for idx, child in enumerate(value):
             yield from _walk_json(child, (*path, str(idx)))
@@ -53,7 +49,8 @@ def _walk_json(value, path: tuple[str, ...] = ()):
 
 
 def _phones_from_value(value) -> set[str]:
-    phones = {normalize_phone(m.group(0)) for m in PHONE_RE.finditer(str(value or ""))}
+    text = str(value or "")
+    phones = {normalize_phone(m.group(0)) for m in PHONE_RE.finditer(text)}
     phones.discard(None)
     return phones
 
@@ -78,25 +75,22 @@ class PortalNativeFinding:
 
 
 class PortalNativeContactResolver:
-    """Read only complete contacts explicitly exposed in structured data on an individual portal detail page.
+    """Extract complete contacts explicitly exposed in structured data on an exact portal detail page.
 
-    Category/overview pages and arbitrary HTML phone strings are intentionally rejected because they can
-    contain support numbers, advertiser numbers for other cards, or unrelated page furniture.
-    No login, OTP, CAPTCHA, subscription, reveal, or protected endpoint is bypassed.
+    It never triggers login/contact reveal actions and does not bypass OTP, CAPTCHA, subscription,
+    or access controls. Category-page and arbitrary HTML phone strings are intentionally rejected.
     """
 
     def __init__(self, client: httpx.AsyncClient | None = None) -> None:
         self.client = client or httpx.AsyncClient(
             timeout=20,
             follow_redirects=True,
-            headers={"User-Agent": "OwnerPlotFinder/0.9 (+portal-native-public-data)"},
+            headers={"User-Agent": "Mozilla/5.0 OwnerPlotFinder/0.9"},
         )
 
     async def _resolve_one(self, listing: Listing) -> PortalNativeFinding | None:
-        if not _portal(listing.url):
-            return None
-        if not _individual_detail_url(listing.url):
-            listing.evidence.append("Portal-native probe skipped: not an individual property detail URL")
+        if not _portal(listing.url) or not _detail_page(listing.url):
+            listing.evidence.append("Portal-native probe skipped: exact detail URL not resolved")
             return None
         try:
             response = await self.client.get(listing.url)
@@ -112,21 +106,31 @@ class PortalNativeContactResolver:
             listing.evidence.append("Portal-native probe: unsupported response type")
             return None
 
+        text = response.text
         candidates: list[tuple[str, list[str]]] = []
-        for blob in _extract_json_blobs(response.text):
+        contact_paths: list[str] = []
+        structured_blobs = _extract_json_blobs(text)
+
+        for blob in structured_blobs:
             for path, value in _walk_json(blob):
-                key = (path[-1] if path else "").lower().replace("-", "").replace(" ", "").replace("_", "")
-                allowed = {k.replace("_", "") for k in CONTACT_KEYS}
-                if key not in allowed:
-                    continue
-                for phone in _phones_from_value(value):
-                    candidates.append((phone, [f"portal-native structured contact field: {'.'.join(path)}"]))
+                key = (path[-1] if path else "").lower().replace("-", "").replace(" ", "")
+                normalized_key = key.replace("_", "")
+                if normalized_key in {k.replace("_", "") for k in CONTACT_KEYS}:
+                    path_s = ".".join(path)
+                    if path_s not in contact_paths:
+                        contact_paths.append(path_s)
+                    for phone in _phones_from_value(value):
+                        candidates.append((phone, [f"portal-native structured field: {path_s}"]))
+
+        masked = bool(MASKED_RE.search(text))
+        listing.evidence.append(
+            f"Portal-native diagnostics: structured blobs {len(structured_blobs)}; contact-key paths {len(contact_paths)}; complete structured phones {len(candidates)}; masked contact {'yes' if masked else 'no'}"
+        )
+        if contact_paths:
+            listing.evidence.append("Portal-native contact paths: " + ", ".join(contact_paths[:8]))
 
         if not candidates:
-            masked = bool(MASKED_RE.search(response.text))
-            listing.evidence.append(
-                "Portal-native probe: no complete structured public phone" + ("; masked contact detected" if masked else "")
-            )
+            listing.evidence.append("Portal-native probe: no explicit complete structured contact")
             return None
 
         phone, evidence = candidates[0]
