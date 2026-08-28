@@ -13,16 +13,12 @@ import httpx
 from .domain import Listing, SellerType
 from .processing import normalize_phone, classify_seller
 
-
 PHONE_RE = re.compile(r"(?:\+?91[\s.-]?)?([6-9](?:[\s.-]?\d){9})(?!\d)")
 PARTIAL_PHONE_RE = re.compile(r"(?:\+?91[\s.-]?)?([6-9]\d{1,4})[\s.-]?[xX*•]{4,}")
 OWNER_NAME_RE = re.compile(r"\bowner\s*[:\-]\s*([A-Za-z][A-Za-z .]{1,60})", re.I)
 DIM_RE = re.compile(r"\b(\d{2,3}(?:\.\d+)?)\s*[xX×]\s*(\d{2,3}(?:\.\d+)?)\b")
 PORTAL_HOSTS = {"magicbricks.com", "99acres.com"}
-GENERIC = {
-    "plot","land","property","sale","owner","residential","coimbatore","kalapatti",
-    "sqft","square","feet","road","near","contact","price","facing","resale","freehold",
-}
+GENERIC = {"plot","land","property","sale","owner","residential","coimbatore","kalapatti","sqft","square","feet","road","near","contact","price","facing","resale","freehold"}
 
 
 def _host(url: str) -> str:
@@ -42,17 +38,11 @@ def _owner_name(item: Listing) -> str | None:
             if name.lower() not in {"owner", "contact owner", "individual"}:
                 return name
     claim = (item.seller_claim or "").strip()
-    if claim and claim.lower() not in {"owner", "contact owner", "posted by owner", "individual"}:
-        return claim
-    return None
+    return claim if claim and claim.lower() not in {"owner","contact owner","posted by owner","individual"} else None
 
 
-def _dimensions(text: str) -> set[tuple[int, int]]:
-    found = set()
-    for left, right in DIM_RE.findall(text or ""):
-        pair = tuple(sorted((round(float(left)), round(float(right)))))
-        found.add(pair)
-    return found
+def _dimensions(text: str) -> set[tuple[int,int]]:
+    return {tuple(sorted((round(float(a)),round(float(b))))) for a,b in DIM_RE.findall(text or "")}
 
 
 def _visible_phone_prefix(text: str) -> str | None:
@@ -61,164 +51,142 @@ def _visible_phone_prefix(text: str) -> str | None:
 
 
 def _tokens(text: str) -> set[str]:
-    values = set(re.findall(r"[a-z0-9]+", (text or "").lower()))
-    return {value for value in values if len(value) > 2 and value not in GENERIC}
+    values=set(re.findall(r"[a-z0-9]+",(text or "").lower()))
+    return {v for v in values if len(v)>2 and v not in GENERIC}
 
 
 def _page_text(item: Listing) -> str:
     return f"{item.title} {item.description}"
 
 
-def _score(target: Listing, candidate_text: str, candidate_url: str) -> tuple[int, list[str]]:
-    text = candidate_text.lower()
-    evidence: list[str] = []
-    score = 0
-    locality = target.locality.lower().strip()
-    if locality and locality in text:
-        score += 20; evidence.append("same locality")
-    owner = _owner_name(target)
-    if owner and owner.lower() in text:
-        score += 25; evidence.append("same owner name")
+def _score(target: Listing,candidate_text: str,candidate_url: str)->tuple[int,list[str]]:
+    text=candidate_text.lower(); evidence=[]; score=0
+    locality=target.locality.lower().strip()
+    if locality and locality in text: score+=20; evidence.append("same locality")
+    owner=_owner_name(target)
+    if owner and owner.lower() in text: score+=25; evidence.append("same owner name")
     if target.area_sqft:
-        area = round(target.area_sqft)
-        area_patterns = {str(area), f"{area:,}", f"{target.area_sqft:g}"}
-        if any(re.search(rf"\b{re.escape(value)}\s*(?:sq\.?\s*ft|sqft|square\s*feet)\b", text, re.I) for value in area_patterns):
-            score += 30; evidence.append("same plot area")
-    target_dims = _dimensions(_page_text(target)); candidate_dims = _dimensions(candidate_text)
-    if target_dims and target_dims & candidate_dims:
-        score += 20; evidence.append("same dimensions")
-    prefix = _visible_phone_prefix(_page_text(target))
-    if prefix and re.search(rf"(?:\+?91[\s.-]?)?{re.escape(prefix)}\d+", candidate_text):
-        score += 15; evidence.append("same visible phone prefix")
+        area=round(target.area_sqft); variants={str(area),f"{area:,}",f"{target.area_sqft:g}"}
+        if any(re.search(rf"\b{re.escape(v)}\s*(?:sq\.?\s*ft|sqft|square\s*feet)\b",text,re.I) for v in variants): score+=30; evidence.append("same plot area")
+    if _dimensions(_page_text(target)) & _dimensions(candidate_text): score+=20; evidence.append("same dimensions")
+    prefix=_visible_phone_prefix(_page_text(target))
+    if prefix and re.search(rf"(?:\+?91[\s.-]?)?{re.escape(prefix)}\d+",candidate_text): score+=15; evidence.append("same visible phone prefix")
     if target.price:
-        lakhs = target.price / 100_000; crores = target.price / 10_000_000
-        price_terms = [f"{lakhs:g} lakh", f"{lakhs:g} lac", f"{crores:g} cr", f"{crores:g} crore"]
-        if any(term.lower() in text for term in price_terms):
-            score += 10; evidence.append("same asking price")
-    overlap = _tokens(_page_text(target)) & _tokens(candidate_text)
-    if len(overlap) >= 5:
-        score += 15; evidence.append("strong description/project overlap")
-    elif len(overlap) >= 3:
-        score += 8; evidence.append("description/project overlap")
-    if _host(candidate_url) in PORTAL_HOSTS:
-        score -= 15
-    return max(0, min(100, score)), evidence
+        lakhs=target.price/100_000; crores=target.price/10_000_000
+        if any(x in text for x in (f"{lakhs:g} lakh",f"{lakhs:g} lac",f"{crores:g} cr",f"{crores:g} crore")): score+=10; evidence.append("same asking price")
+    overlap=_tokens(_page_text(target))&_tokens(candidate_text)
+    if len(overlap)>=5: score+=15; evidence.append("strong description/project overlap")
+    elif len(overlap)>=3: score+=8; evidence.append("description/project overlap")
+    if _host(candidate_url) in PORTAL_HOSTS: score-=15
+    return max(0,min(100,score)),evidence
 
 
-def _queries(target: Listing) -> list[str]:
-    locality = target.locality
-    owner = _owner_name(target)
-    area = round(target.area_sqft) if target.area_sqft else None
-    dims = sorted(_dimensions(_page_text(target)))
-    dim = f"{dims[0][0]} X {dims[0][1]}" if dims else None
-    prefix = _visible_phone_prefix(_page_text(target))
-    distinctive = sorted(_tokens(_page_text(target)))
-    token_phrase = " ".join(f'"{x}"' for x in distinctive[:3])
-    queries=[]
-    if area: queries.append(f'"{locality}" "{area} sqft" (phone OR contact OR whatsapp) plot')
-    if dim: queries.append(f'"{locality}" "{dim}" (phone OR contact OR whatsapp)')
-    if owner and area: queries.append(f'"{owner}" "{locality}" "{area}" property contact')
-    if owner and dim: queries.append(f'"{owner}" "{dim}" Coimbatore')
-    if prefix and area: queries.append(f'"{locality}" "{area}" "{prefix}" phone')
-    if prefix and owner: queries.append(f'"{owner}" "{prefix}" Coimbatore')
-    if token_phrase: queries.append(f'"{locality}" {token_phrase} (phone OR whatsapp OR contact)')
-    if area: queries.append(f'site:realestateindia.com "{locality}" "{area}"')
-    if area: queries.append(f'site:housing.com "{locality}" "{area}" owner')
-    if area: queries.append(f'site:nobroker.in "{locality}" "{area}"')
-    if area: queries.append(f'site:facebook.com "{locality}" "{area}" plot')
-    if area: queries.append(f'site:instagram.com "{locality}" "{area}" property')
-    return list(dict.fromkeys(queries))
+def _queries(target: Listing)->list[str]:
+    locality=target.locality; owner=_owner_name(target); area=round(target.area_sqft) if target.area_sqft else None
+    dims=sorted(_dimensions(_page_text(target))); dim=f"{dims[0][0]} X {dims[0][1]}" if dims else None
+    prefix=_visible_phone_prefix(_page_text(target)); distinctive=sorted(_tokens(_page_text(target))); token_phrase=" ".join(f'"{x}"' for x in distinctive[:3])
+    q=[]
+    if area: q.append(f'"{locality}" "{area} sqft" (phone OR contact OR whatsapp) plot')
+    if dim: q.append(f'"{locality}" "{dim}" (phone OR contact OR whatsapp)')
+    if owner and area: q.append(f'"{owner}" "{locality}" "{area}" property contact')
+    if owner and dim: q.append(f'"{owner}" "{dim}" Coimbatore')
+    if prefix and area: q.append(f'"{locality}" "{area}" "{prefix}" phone')
+    if prefix and owner: q.append(f'"{owner}" "{prefix}" Coimbatore')
+    if token_phrase: q.append(f'"{locality}" {token_phrase} (phone OR whatsapp OR contact)')
+    if area:
+        for site in ("realestateindia.com","housing.com","nobroker.in","facebook.com","instagram.com","youtube.com","olx.in","quikr.com"):
+            q.append(f'site:{site} "{locality}" "{area}" property')
+    return list(dict.fromkeys(q))
 
 
 @dataclass(slots=True)
 class ContactCandidate:
-    url: str
-    phone: str
-    score: int
-    evidence: list[str]
+    url:str; phone:str; score:int; evidence:list[str]
 
 
 class PublicOwnerContactResolver:
-    """Resolve only openly published numbers on strongly matching public cross-posts."""
-    def __init__(self, api_key: str, cse_id: str, allowed_domains: set[str], client: httpx.AsyncClient | None = None) -> None:
-        self.api_key = api_key; self.cse_id = cse_id
-        self.allowed_domains = {d.lower().removeprefix("www.") for d in allowed_domains}
-        self.client = client or httpx.AsyncClient(timeout=12, follow_redirects=True, headers={"User-Agent":"OwnerPlotFinder/0.3 (+public-contact-correlation)"})
-        self.max_listings = int(os.getenv("PUBLIC_CONTACT_RESOLVE_MAX_LISTINGS", "8"))
-        self.max_queries = int(os.getenv("PUBLIC_CONTACT_RESOLVE_QUERIES", "8"))
-        self.min_score = int(os.getenv("PUBLIC_CONTACT_MIN_MATCH_SCORE", "75"))
+    def __init__(self,api_key:str,cse_id:str,allowed_domains:set[str],tavily_api_key:str="",client:httpx.AsyncClient|None=None)->None:
+        self.api_key=api_key; self.cse_id=cse_id; self.tavily_api_key=tavily_api_key
+        self.allowed_domains={d.lower().removeprefix("www.") for d in allowed_domains}
+        self.client=client or httpx.AsyncClient(timeout=20,follow_redirects=True,headers={"User-Agent":"OwnerPlotFinder/0.5 (+public-contact-correlation)"})
+        self.max_listings=int(os.getenv("PUBLIC_CONTACT_RESOLVE_MAX_LISTINGS","8")); self.max_queries=int(os.getenv("PUBLIC_CONTACT_RESOLVE_QUERIES","8")); self.min_score=int(os.getenv("PUBLIC_CONTACT_MIN_MATCH_SCORE","75"))
 
     @classmethod
-    def from_environment(cls) -> "PublicOwnerContactResolver | None":
-        key = os.getenv("GOOGLE_CSE_API_KEY", "").strip(); cse = os.getenv("GOOGLE_CSE_ID", "").strip()
-        if not key or not cse: return None
-        root = Path(__file__).resolve().parents[2]; registry = root / "config" / "allowed-public-domains.txt"
-        domains: set[str] = set()
-        try: domains = {line.strip() for line in registry.read_text(encoding="utf-8").splitlines() if line.strip() and not line.lstrip().startswith("#")}
+    def from_environment(cls):
+        key=os.getenv("GOOGLE_CSE_API_KEY","").strip(); cse=os.getenv("GOOGLE_CSE_ID","").strip(); tavily=os.getenv("TAVILY_API_KEY","").strip()
+        if not (key and cse) and not tavily: return None
+        registry=Path(__file__).resolve().parents[2]/"config"/"allowed-public-domains.txt"; domains=set()
+        try: domains={line.strip() for line in registry.read_text(encoding="utf-8").splitlines() if line.strip() and not line.lstrip().startswith("#")}
         except OSError: pass
-        domains |= {"realestateindia.com", "housing.com", "nobroker.in", "quikr.com", "olx.in", "facebook.com", "instagram.com"}
-        return cls(key, cse, domains)
+        domains|={"realestateindia.com","housing.com","nobroker.in","quikr.com","olx.in","facebook.com","instagram.com","youtube.com"}
+        return cls(key,cse,domains,tavily)
 
-    def _allowed(self, url: str) -> bool:
-        parsed = urlparse(url); host = _host(url)
-        return parsed.scheme == "https" and bool(host) and any(host == domain or host.endswith(f".{domain}") for domain in self.allowed_domains)
+    def _allowed(self,url:str)->bool:
+        host=_host(url); return urlparse(url).scheme=="https" and bool(host) and any(host==d or host.endswith(f".{d}") for d in self.allowed_domains)
 
-    async def _robots_allowed(self, url: str) -> bool:
-        parsed=urlparse(url); robots_url=f"{parsed.scheme}://{parsed.netloc}/robots.txt"
+    async def _robots_allowed(self,url:str)->bool:
+        parsed=urlparse(url)
         try:
-            response=await self.client.get(robots_url)
-            if response.status_code>=400: return False
-            parser=RobotFileParser(); parser.set_url(robots_url); parser.parse(response.text.splitlines())
-            return parser.can_fetch("OwnerPlotFinder",url)
-        except httpx.HTTPError: return False
+            response=await self.client.get(f"{parsed.scheme}://{parsed.netloc}/robots.txt")
+            if response.status_code>=400:return False
+            parser=RobotFileParser(); parser.parse(response.text.splitlines()); return parser.can_fetch("OwnerPlotFinder",url)
+        except httpx.HTTPError:return False
 
-    async def _search(self, query: str) -> list[dict]:
+    async def _google_search(self,query:str)->list[dict]:
+        if not self.api_key or not self.cse_id:return []
         try:
-            response=await self.client.get("https://www.googleapis.com/customsearch/v1",params={"key":self.api_key,"cx":self.cse_id,"q":query,"num":10})
-            response.raise_for_status(); return response.json().get("items", [])
-        except (httpx.HTTPError,ValueError,KeyError): return []
+            response=await self.client.get("https://www.googleapis.com/customsearch/v1",params={"key":self.api_key,"cx":self.cse_id,"q":query,"num":10}); response.raise_for_status()
+            return [{"link":i.get("link",""),"title":i.get("title",""),"snippet":i.get("snippet","")} for i in response.json().get("items",[])]
+        except (httpx.HTTPError,ValueError,KeyError):return []
 
-    async def _candidate_text(self, item: dict) -> tuple[str, str]:
-        url=item.get("link",""); snippet=" ".join(str(item.get(key,"")) for key in ("title","snippet","htmlSnippet"))
-        if not url or not self._allowed(url) or not await self._robots_allowed(url): return url,snippet
+    async def _tavily_search(self,query:str)->list[dict]:
+        if not self.tavily_api_key:return []
+        donor_domains=sorted(d for d in self.allowed_domains if d not in PORTAL_HOSTS)
+        try:
+            response=await self.client.post("https://api.tavily.com/search",headers={"Authorization":f"Bearer {self.tavily_api_key}","Content-Type":"application/json"},json={"query":query,"topic":"general","search_depth":"basic","max_results":10,"include_answer":False,"include_raw_content":"text","include_images":False,"include_domains":donor_domains}); response.raise_for_status()
+            return [{"link":i.get("url",""),"title":i.get("title",""),"snippet":i.get("content","") or "","raw":i.get("raw_content","") or ""} for i in response.json().get("results",[])]
+        except (httpx.HTTPError,ValueError,KeyError):return []
+
+    async def _search(self,query:str)->list[dict]:
+        google,tavily=await asyncio.gather(self._google_search(query),self._tavily_search(query)); seen=set(); out=[]
+        for item in [*google,*tavily]:
+            url=item.get("link","")
+            if url and url not in seen:seen.add(url);out.append(item)
+        return out
+
+    async def _candidate_text(self,item:dict)->tuple[str,str]:
+        url=item.get("link",""); snippet=" ".join(str(item.get(k,"")) for k in ("title","snippet","raw"))
+        if not url or not self._allowed(url) or not await self._robots_allowed(url):return url,snippet
         try:
             response=await self.client.get(url)
-            if response.status_code>=400: return url,snippet
-            ctype=response.headers.get("content-type","").lower()
-            if "text/html" not in ctype and "text/plain" not in ctype: return url,snippet
-            body=re.sub(r"<script\b[^>]*>.*?</script>"," ",response.text,flags=re.I|re.S)
-            body=re.sub(r"<style\b[^>]*>.*?</style>"," ",body,flags=re.I|re.S)
-            body=re.sub(r"<[^>]+>"," ",body); body=re.sub(r"\s+"," ",body)
-            return url,f"{snippet} {body[:80_000]}"
-        except httpx.HTTPError: return url,snippet
+            if response.status_code>=400:return url,snippet
+            if not any(t in response.headers.get("content-type","").lower() for t in ("text/html","text/plain")):return url,snippet
+            body=re.sub(r"<script\b[^>]*>.*?</script>"," ",response.text,flags=re.I|re.S); body=re.sub(r"<style\b[^>]*>.*?</style>"," ",body,flags=re.I|re.S); body=re.sub(r"<[^>]+>"," ",body); body=re.sub(r"\s+"," ",body)
+            return url,f"{snippet} {body[:80000]}"
+        except httpx.HTTPError:return url,snippet
 
-    async def _resolve_one(self, target: Listing) -> ContactCandidate | None:
-        seen:set[str]=set(); best:ContactCandidate|None=None; checked=0; phone_pages=0; best_score=0
+    async def _resolve_one(self,target:Listing)->ContactCandidate|None:
+        seen=set();best=None;checked=phone_pages=best_score=0
         for query in _queries(target)[:self.max_queries]:
             for item in await self._search(query):
                 url=item.get("link","")
-                if not url or url in seen or not self._allowed(url): continue
-                seen.add(url)
-                if url.rstrip("/")==target.url.rstrip("/"): continue
-                checked+=1; candidate_url,text=await self._candidate_text(item)
-                phones={normalize_phone(match.group(0)) for match in PHONE_RE.finditer(text)}; phones.discard(None)
-                if not phones: continue
-                phone_pages+=1; score,evidence=_score(target,text,candidate_url); best_score=max(best_score,score)
-                if score<self.min_score or not any(key in evidence for key in ("same plot area","same dimensions","strong description/project overlap")): continue
+                if not url or url in seen or not self._allowed(url) or url.rstrip("/")==target.url.rstrip("/"):continue
+                seen.add(url);checked+=1;candidate_url,text=await self._candidate_text(item)
+                phones={normalize_phone(m.group(0)) for m in PHONE_RE.finditer(text)};phones.discard(None)
+                if not phones:continue
+                phone_pages+=1;score,evidence=_score(target,text,candidate_url);best_score=max(best_score,score)
+                if score<self.min_score or not any(k in evidence for k in ("same plot area","same dimensions","strong description/project overlap")):continue
                 for phone in phones:
                     candidate=ContactCandidate(candidate_url,phone,score,evidence)
-                    if best is None or candidate.score>best.score: best=candidate
+                    if best is None or candidate.score>best.score:best=candidate
         target.evidence.append(f"Contact hunt checked {checked} public candidates; {phone_pages} exposed full phones; best match {best_score}/100")
         return best
 
-    async def enrich(self, listings: list[Listing]) -> list[Listing]:
-        targets=[item for item in listings if _is_portal(item) and not item.phone and item.seller_type not in {SellerType.BROKER,SellerType.BUILDER} and (item.seller_type in {SellerType.PROBABLE_OWNER,SellerType.VERIFIED_OWNER} or re.search(r"\b(owner|contact owner|posted by owner|individual)\b",f"{item.seller_claim or ''} {item.title} {item.description}",re.I))][:self.max_listings]
-        resolved=await asyncio.gather(*(self._resolve_one(item) for item in targets),return_exceptions=True)
+    async def enrich(self,listings:list[Listing])->list[Listing]:
+        targets=[i for i in listings if _is_portal(i) and not i.phone and i.seller_type not in {SellerType.BROKER,SellerType.BUILDER} and (i.seller_type in {SellerType.PROBABLE_OWNER,SellerType.VERIFIED_OWNER} or re.search(r"\b(owner|contact owner|posted by owner|individual)\b",f"{i.seller_claim or ''} {i.title} {i.description}",re.I))][:self.max_listings]
+        resolved=await asyncio.gather(*(self._resolve_one(i) for i in targets),return_exceptions=True)
         for target,result in zip(targets,resolved):
-            if isinstance(result,BaseException) or result is None: continue
-            target.phone=result.phone; target.phone_public=True; target.matching_contact_sources=max(2,target.matching_contact_sources)
-            target.contact_verification="public_cross_post_owner_contact"
-            target.evidence.append(f"Public phone found on strongly matching cross-post: {result.url}")
-            target.evidence.append(f"Contact match score: {result.score}/100 ({', '.join(result.evidence)})")
-            classify_seller(target)
+            if isinstance(result,BaseException) or result is None:continue
+            target.phone=result.phone;target.phone_public=True;target.matching_contact_sources=max(2,target.matching_contact_sources);target.contact_verification="public_cross_post_owner_contact"
+            target.evidence.append(f"Public phone found on strongly matching cross-post: {result.url}");target.evidence.append(f"Contact match score: {result.score}/100 ({', '.join(result.evidence)})");classify_seller(target)
         return listings
