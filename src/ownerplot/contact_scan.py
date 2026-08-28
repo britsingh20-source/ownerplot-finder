@@ -13,6 +13,7 @@ from .query import parse_query
 
 
 PORTAL_HOSTS = {"magicbricks.com", "99acres.com"}
+HARD_CONTACT_ANCHORS = ("same owner name", "same dimensions", "same visible phone prefix", "same property image")
 
 
 def _host(url: str) -> str:
@@ -35,39 +36,54 @@ def _owner_seed(item) -> bool:
     )
 
 
+def _has_hard_contact_anchor(item) -> bool:
+    evidence = " ".join(item.evidence).lower()
+    return any(anchor in evidence for anchor in HARD_CONTACT_ANCHORS)
+
+
+def _reject_weak_contacts(seeds: list) -> list:
+    for item in seeds:
+        if item.phone and item.phone_public and not _has_hard_contact_anchor(item):
+            item.evidence.append(f"Rejected public phone {item.phone}: no hard owner/property anchor")
+            item.phone = None
+            item.phone_public = False
+            item.contact_verification = "weak_cross_post_rejected"
+    return seeds
+
+
+def _priority(item) -> tuple:
+    area = item.area_sqft or 0
+    target_size = 1 if 1700 <= area <= 2700 else 0
+    named_owner = 1 if item.seller_claim and item.seller_claim.lower() not in {"owner", "individual"} else 0
+    detail_url = 1 if "propertydetails" in item.url.lower() or "-npffid" in item.url.lower() else 0
+    return (target_size, named_owner, detail_url, item.owner_confidence)
+
+
 def _format_contact_first(locality: str, seeds: list) -> str:
-    resolved = [item for item in seeds if item.contact_verification == "public_cross_post_owner_contact" and item.phone]
+    resolved = [item for item in seeds if item.phone and item.phone_public and _has_hard_contact_anchor(item)]
     unresolved = [item for item in seeds if not item.phone]
     lines = [
         "OWNERPLOT CONTACT-FIRST SEARCH",
         "",
         f"PRIMARY OWNER SEEDS — {locality.upper()}",
-        "Only MagicBricks/99acres owner-posted detail listings are shown. Other public websites/social sources are contact donors only.",
-        f"Portal owner seeds: {len(seeds)} · Resolved public owner contacts: {len(resolved)} · Unresolved: {len(unresolved)}",
+        "Only MagicBricks/99acres owner-posted listings are shown. Public donor sources never become owner results by themselves.",
+        "A phone is shown only with a hard anchor: same owner name, dimensions, visible phone prefix, or same property image.",
+        f"Portal owner seeds: {len(seeds)} · Hard-anchored public owner contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}",
     ]
     if not seeds:
-        lines.append("No individual MagicBricks/99acres owner detail pages were found in this run.")
+        lines.append("No individual MagicBricks/99acres owner listings were found in this run.")
         return "\n".join(lines)
-    for index, item in enumerate(seeds[:12], 1):
+    for index, item in enumerate(sorted(seeds, key=_priority, reverse=True)[:12], 1):
         price = f"₹{item.price/100_000:g} lakh" if item.price else "Price not stated"
         area = f"{item.area_sqft:g} sq.ft." if item.area_sqft else "Area not stated"
         owner = item.seller_claim if item.seller_claim and item.seller_claim.lower() != "owner" else "Owner-labelled"
-        if item.contact_verification == "public_cross_post_owner_contact" and item.phone:
-            contact = f"VERIFIED/PUBLIC CROSS-POST CONTACT: {item.phone}"
-        elif item.phone and item.phone_public:
-            contact = f"PUBLIC CONTACT — NEEDS PROPERTY CONFIRMATION: {item.phone}"
-        else:
-            contact = "UNRESOLVED — no qualifying public phone matched yet"
+        contact = f"HARD-ANCHORED PUBLIC OWNER CONTACT: {item.phone}" if item.phone and item.phone_public and _has_hard_contact_anchor(item) else "UNRESOLVED — no hard-anchored public phone matched yet"
         lines.extend([
-            "",
-            f"{index}. {item.title}",
-            f"{area} · {price}",
-            f"Portal: {_host(item.url)} · Advertiser: {owner}",
-            f"Contact: {contact}",
-            f"Source: {item.url}",
+            "", f"{index}. {item.title}", f"{area} · {price}",
+            f"Portal: {_host(item.url)} · Advertiser: {owner}", f"Contact: {contact}", f"Source: {item.url}",
         ])
-        diagnostics = [e for e in item.evidence if e.startswith("Contact hunt checked") or e.startswith("Public phone found") or e.startswith("Contact match score")]
-        for evidence in diagnostics[-3:]:
+        diagnostics = [e for e in item.evidence if e.startswith("Contact hunt checked") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone")]
+        for evidence in diagnostics[-4:]:
             lines.append(f"Evidence: {evidence}")
     return "\n".join(lines)
 
@@ -76,20 +92,16 @@ async def run(locality: str, telegram: bool = False) -> str:
     query = parse_query(f"plots in {locality}")
     detail_collector = PortalOwnerSeedCollector.from_environment()
     detail_seeds = await detail_collector.search(locality) if detail_collector is not None else []
-
-    # Fallback keeps portal discovery useful if CSE misses an indexed detail page, but category pages
-    # are deliberately not allowed to displace detail-page seeds when detail seeds exist.
     if detail_seeds:
         seeds = detail_seeds
     else:
         portal_results = await search_profiles(query, profiles=("portals",))
         seeds = [item for item in portal_results if _owner_seed(item) and ("propertydetails" in item.url.lower() or "-npffid" in item.url.lower())]
-
     seeds = deduplicate(seeds)
     resolver = PublicOwnerContactResolver.from_environment()
     if resolver is not None and seeds:
         seeds = await resolver.enrich(seeds)
-    seeds = deduplicate(seeds)
+    seeds = _reject_weak_contacts(deduplicate(seeds))
     message = _format_contact_first(locality, seeds)
     if telegram:
         await send_message(message)
@@ -97,7 +109,7 @@ async def run(locality: str, telegram: bool = False) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Resolve publicly exposed contacts for MagicBricks/99acres owner detail listings")
+    parser = argparse.ArgumentParser(description="Resolve publicly exposed contacts for MagicBricks/99acres owner listings")
     parser.add_argument("--locality", default="Kalapatti")
     parser.add_argument("--telegram", action="store_true")
     args = parser.parse_args()
