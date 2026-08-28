@@ -5,6 +5,7 @@ on:
     branches:
       - feature/public-owner-contact-resolver
     paths:
+      - "pyproject.toml"
       - "src/ownerplot/contact_resolver.py"
       - "src/ownerplot/contact_scan.py"
       - "src/ownerplot/exact_detail_resolver.py"
@@ -55,6 +56,8 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: pip install -e .
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
       - name: Resolve public owner contacts
         shell: bash
         run: |
