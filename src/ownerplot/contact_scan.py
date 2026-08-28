@@ -53,7 +53,7 @@ def _priority(item) -> tuple:
     portal_native = 1 if item.contact_verification == "portal_native_public_contact" else 0
     return (direct_rei, portal_native, realestateindia, detail_url, target_size, named_owner, item.owner_confidence)
 
-def _format_contact_first(locality: str, seeds: list) -> str:
+def _format_contact_first(locality: str, seeds: list, diagnostics: list[str] | None = None) -> str:
     resolved = [item for item in seeds if item.phone and item.phone_public and _has_hard_contact_anchor(item)]
     rei_resolved = [item for item in resolved if item.contact_verification == "realestateindia_public_owner_contact"]
     portal_native = [item for item in resolved if item.contact_verification == "portal_native_public_contact"]
@@ -61,6 +61,8 @@ def _format_contact_first(locality: str, seeds: list) -> str:
     rei_seeds = [item for item in seeds if _host(item.url).endswith("realestateindia.com")]
     exact_details = sum(1 for item in seeds if "property-detail" in item.url.lower() or "propertydetails" in item.url.lower() or "-npffid" in item.url.lower())
     lines = ["OWNERPLOT CONTACT-FIRST SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}", "RealEstateIndia is searched first for direct-owner/individual plot listings and public contact evidence; MagicBricks/99acres then supplement the seed pool. Structured portal contact, public cross-post and image correlation are fallbacks.", "No OTP/CAPTCHA/subscription bypass is used; a phone is shown only if publicly exposed on the exact property or validated with a hard same-owner/property anchor.", f"RealEstateIndia seeds: {len(rei_seeds)} · Total owner seeds: {len(seeds)} · Exact detail URLs: {exact_details} · RealEstateIndia direct public contacts: {len(rei_resolved)} · Portal-native contacts: {len(portal_native)} · Total hard-anchored contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}"]
+    for note in diagnostics or []:
+        lines.append(f"Diagnostic: {note}")
     if not seeds:
         lines.append("No qualifying owner listings were found in this run."); return "\n".join(lines)
     for index, item in enumerate(sorted(seeds, key=_priority, reverse=True)[:15], 1):
@@ -75,25 +77,35 @@ def _format_contact_first(locality: str, seeds: list) -> str:
         else:
             contact = "UNRESOLVED — no qualifying public phone matched yet"
         lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Portal: {_host(item.url)} · Advertiser: {owner}", f"Contact: {contact}", f"Source: {item.url}"])
-        diagnostics = [e for e in item.evidence if e.startswith("RealEstateIndia") or e.startswith("Exact-detail") or e.startswith("Portal-native") or e.startswith("portal-native") or e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property")]
-        for evidence in diagnostics[-10:]: lines.append(f"Evidence: {evidence}")
+        item_diagnostics = [e for e in item.evidence if e.startswith("RealEstateIndia") or e.startswith("Exact-detail") or e.startswith("Portal-native") or e.startswith("portal-native") or e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property")]
+        for evidence in item_diagnostics[-10:]: lines.append(f"Evidence: {evidence}")
     return "\n".join(lines)
 
 async def run(locality: str, telegram: bool = False) -> str:
     query = parse_query(f"plots in {locality}")
     seeds = []
+    diagnostics: list[str] = []
 
     rei_collector = RealEstateIndiaOwnerCollector.from_environment()
     if rei_collector is not None:
-        seeds.extend(await rei_collector.search(locality))
+        try:
+            seeds.extend(await rei_collector.search(locality))
+        except Exception as exc:
+            diagnostics.append(f"RealEstateIndia collector failed but scan continued: {type(exc).__name__}: {exc}")
 
     detail_collector = PortalOwnerSeedCollector.from_environment()
     if detail_collector is not None:
-        seeds.extend(await detail_collector.search(locality))
+        try:
+            seeds.extend(await detail_collector.search(locality))
+        except Exception as exc:
+            diagnostics.append(f"Portal seed collector failed but scan continued: {type(exc).__name__}: {exc}")
 
     if not seeds:
-        portal_results = await search_profiles(query, profiles=("portals", "public_contacts"))
-        seeds = [item for item in portal_results if _owner_seed(item)]
+        try:
+            portal_results = await search_profiles(query, profiles=("portals", "public_contacts"))
+            seeds = [item for item in portal_results if _owner_seed(item)]
+        except RuntimeError as exc:
+            diagnostics.append(f"Optional Tavily/search fallback unavailable; continuing without it: {exc}")
 
     seeds = [item for item in clean_seed_owner_names(deduplicate(seeds)) if _owner_seed(item)]
 
@@ -105,14 +117,22 @@ async def run(locality: str, telegram: bool = False) -> str:
     seeds = _reject_weak_contacts(deduplicate(seeds))
 
     text_resolver = PublicOwnerContactResolver.from_environment()
-    if text_resolver is not None and seeds: seeds = await text_resolver.enrich(seeds)
+    if text_resolver is not None and seeds:
+        try:
+            seeds = await text_resolver.enrich(seeds)
+        except Exception as exc:
+            diagnostics.append(f"Public cross-post resolver failed but scan continued: {type(exc).__name__}: {exc}")
     seeds = _reject_weak_contacts(deduplicate(seeds))
 
     image_resolver = PropertyImageContactResolver.from_environment()
-    if image_resolver is not None and seeds: seeds = await image_resolver.enrich(seeds)
+    if image_resolver is not None and seeds:
+        try:
+            seeds = await image_resolver.enrich(seeds)
+        except Exception as exc:
+            diagnostics.append(f"Image resolver failed but scan continued: {type(exc).__name__}: {exc}")
     seeds = _reject_weak_contacts(deduplicate(seeds))
 
-    message = _format_contact_first(locality, seeds)
+    message = _format_contact_first(locality, seeds, diagnostics)
     if telegram: await send_message(message)
     return message
 
