@@ -1,6 +1,14 @@
 name: OwnerPlot contact resolver
 
 on:
+  push:
+    branches:
+      - feature/public-owner-contact-resolver
+    paths:
+      - "src/ownerplot/contact_resolver.py"
+      - "src/ownerplot/contact_scan.py"
+      - ".github/workflows/contact-resolve.yml"
+      - "config/allowed-public-domains.txt"
   workflow_dispatch:
     inputs:
       locality:
@@ -30,8 +38,8 @@ jobs:
       META_GRAPH_API_VERSION: ${{ vars.META_GRAPH_API_VERSION || 'v26.0' }}
       CONTACT_STORE_KEY: ${{ secrets.CONTACT_STORE_KEY }}
       ALLOWED_PUBLIC_DOMAINS: ${{ vars.ALLOWED_PUBLIC_DOMAINS }}
-      PUBLIC_CONTACT_RESOLVE_MAX_LISTINGS: ${{ vars.PUBLIC_CONTACT_RESOLVE_MAX_LISTINGS || '5' }}
-      PUBLIC_CONTACT_RESOLVE_QUERIES: ${{ vars.PUBLIC_CONTACT_RESOLVE_QUERIES || '2' }}
+      PUBLIC_CONTACT_RESOLVE_MAX_LISTINGS: ${{ vars.PUBLIC_CONTACT_RESOLVE_MAX_LISTINGS || '8' }}
+      PUBLIC_CONTACT_RESOLVE_QUERIES: ${{ vars.PUBLIC_CONTACT_RESOLVE_QUERIES || '8' }}
       PUBLIC_CONTACT_MIN_MATCH_SCORE: ${{ vars.PUBLIC_CONTACT_MIN_MATCH_SCORE || '75' }}
     steps:
       - uses: actions/checkout@v4
