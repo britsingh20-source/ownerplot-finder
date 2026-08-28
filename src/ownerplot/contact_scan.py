@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from .contact_resolver import PublicOwnerContactResolver
 from .image_contact_resolver import PropertyImageContactResolver
+from .portal_native_contact import PortalNativeContactResolver
 from .domain import SellerType
 from .github_runner import search_profiles, send_message
 from .portal_seeds import PortalOwnerSeedCollector
@@ -15,7 +16,13 @@ from .seed_cleanup import clean_seed_owner_names
 
 
 PORTAL_HOSTS = {"magicbricks.com", "99acres.com"}
-HARD_CONTACT_ANCHORS = ("same owner name", "same dimensions", "same visible phone prefix", "same property image")
+HARD_CONTACT_ANCHORS = (
+    "same owner name",
+    "same dimensions",
+    "same visible phone prefix",
+    "same property image",
+    "same property via exact portal listing",
+)
 
 
 def _host(url: str) -> str:
@@ -52,17 +59,19 @@ def _priority(item) -> tuple:
     target_size = 1 if 1700 <= area <= 2700 else 0
     named_owner = 1 if item.seller_claim and item.seller_claim.lower() not in {"owner", "individual"} else 0
     detail_url = 1 if "propertydetails" in item.url.lower() or "-npffid" in item.url.lower() else 0
-    return (target_size, named_owner, detail_url, item.owner_confidence)
+    portal_native = 1 if item.contact_verification == "portal_native_public_contact" else 0
+    return (portal_native, target_size, named_owner, detail_url, item.owner_confidence)
 
 
 def _format_contact_first(locality: str, seeds: list) -> str:
     resolved = [item for item in seeds if item.phone and item.phone_public and _has_hard_contact_anchor(item)]
+    portal_native = [item for item in resolved if item.contact_verification == "portal_native_public_contact"]
     unresolved = [item for item in seeds if not item.phone]
     lines = [
-        "OWNERPLOT CONTACT-FIRST SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}",
-        "Only MagicBricks/99acres owner-posted listings are shown. Public donor sources never become owner results by themselves.",
-        "A phone is shown only with a hard anchor: same owner name, dimensions, visible phone prefix, or same property image.",
-        f"Portal owner seeds: {len(seeds)} · Hard-anchored public owner contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}",
+        "OWNERPLOT TWO-ENGINE CONTACT SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}",
+        "Engine A: exact MagicBricks/99acres public structured/page data. Engine B: public cross-post and image correlation fallback.",
+        "No OTP/CAPTCHA/subscription bypass is used; a phone is shown only if the exact portal page publicly exposes it or a hard cross-post anchor validates it.",
+        f"Portal owner seeds: {len(seeds)} · Portal-native contacts: {len(portal_native)} · Total hard-anchored contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}",
     ]
     if not seeds:
         lines.append("No individual MagicBricks/99acres owner listings were found in this run."); return "\n".join(lines)
@@ -70,10 +79,14 @@ def _format_contact_first(locality: str, seeds: list) -> str:
         price = f"₹{item.price/100_000:g} lakh" if item.price else "Price not stated"
         area = f"{item.area_sqft:g} sq.ft." if item.area_sqft else "Area not stated"
         owner = item.seller_claim if item.seller_claim and item.seller_claim.lower() != "owner" else "Owner-labelled"
-        contact = f"HARD-ANCHORED PUBLIC OWNER CONTACT: {item.phone}" if item.phone and item.phone_public and _has_hard_contact_anchor(item) else "UNRESOLVED — no hard-anchored public phone matched yet"
+        if item.phone and item.phone_public and _has_hard_contact_anchor(item):
+            label = "PORTAL-NATIVE PUBLIC OWNER CONTACT" if item.contact_verification == "portal_native_public_contact" else "HARD-ANCHORED PUBLIC OWNER CONTACT"
+            contact = f"{label}: {item.phone}"
+        else:
+            contact = "UNRESOLVED — no qualifying public phone matched yet"
         lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Portal: {_host(item.url)} · Advertiser: {owner}", f"Contact: {contact}", f"Source: {item.url}"])
-        diagnostics = [e for e in item.evidence if e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property image")]
-        for evidence in diagnostics[-5:]: lines.append(f"Evidence: {evidence}")
+        diagnostics = [e for e in item.evidence if e.startswith("Portal-native") or e.startswith("portal-native") or e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property")]
+        for evidence in diagnostics[-6:]: lines.append(f"Evidence: {evidence}")
     return "\n".join(lines)
 
 
@@ -88,11 +101,20 @@ async def run(locality: str, telegram: bool = False) -> str:
         seeds = [item for item in portal_results if _owner_seed(item) and ("propertydetails" in item.url.lower() or "-npffid" in item.url.lower())]
     seeds = clean_seed_owner_names(deduplicate(seeds))
 
+    # Engine A: exact portal page/structured payload. Highest-confidence path when a full
+    # public contact is already present in the HTTP response for this exact listing.
+    native_resolver = PortalNativeContactResolver()
+    if seeds:
+        seeds = await native_resolver.enrich(seeds)
+    seeds = _reject_weak_contacts(deduplicate(seeds))
+
+    # Engine B1: public cross-post correlation for unresolved portal owner seeds.
     text_resolver = PublicOwnerContactResolver.from_environment()
     if text_resolver is not None and seeds:
         seeds = await text_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
 
+    # Engine B2: property-photo correlation for still-unresolved seeds.
     image_resolver = PropertyImageContactResolver.from_environment()
     if image_resolver is not None and seeds:
         seeds = await image_resolver.enrich(seeds)
