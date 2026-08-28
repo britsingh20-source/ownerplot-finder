@@ -15,25 +15,15 @@ from .processing import deduplicate
 from .query import parse_query
 from .seed_cleanup import clean_seed_owner_names
 
-
 PORTAL_HOSTS = {"magicbricks.com", "99acres.com"}
-HARD_CONTACT_ANCHORS = (
-    "same owner name",
-    "same dimensions",
-    "same visible phone prefix",
-    "same property image",
-    "same property via exact portal listing",
-)
-
+HARD_CONTACT_ANCHORS = ("same owner name", "same dimensions", "same visible phone prefix", "same property image", "same property via exact portal listing")
 
 def _host(url: str) -> str:
     return (urlparse(url).hostname or "").lower().removeprefix("www.")
 
-
 def _is_primary_portal(url: str) -> bool:
     host = _host(url)
     return host in PORTAL_HOSTS or any(host.endswith(f".{domain}") for domain in PORTAL_HOSTS)
-
 
 def _owner_seed(item) -> bool:
     if not _is_primary_portal(item.url): return False
@@ -41,11 +31,9 @@ def _owner_seed(item) -> bool:
     text = f"{item.seller_claim or ''} {item.title} {item.description}".lower()
     return item.seller_type in {SellerType.PROBABLE_OWNER, SellerType.VERIFIED_OWNER} or any(marker in text for marker in ("contact owner", "posted by owner", "owner property", "individual", "owner"))
 
-
 def _has_hard_contact_anchor(item) -> bool:
     evidence = " ".join(item.evidence).lower()
     return any(anchor in evidence for anchor in HARD_CONTACT_ANCHORS)
-
 
 def _reject_weak_contacts(seeds: list) -> list:
     for item in seeds:
@@ -53,7 +41,6 @@ def _reject_weak_contacts(seeds: list) -> list:
             item.evidence.append(f"Rejected public phone {item.phone}: no hard owner/property anchor")
             item.phone = None; item.phone_public = False; item.contact_verification = "weak_cross_post_rejected"
     return seeds
-
 
 def _priority(item) -> tuple:
     area = item.area_sqft or 0
@@ -63,18 +50,12 @@ def _priority(item) -> tuple:
     portal_native = 1 if item.contact_verification == "portal_native_public_contact" else 0
     return (portal_native, detail_url, target_size, named_owner, item.owner_confidence)
 
-
 def _format_contact_first(locality: str, seeds: list) -> str:
     resolved = [item for item in seeds if item.phone and item.phone_public and _has_hard_contact_anchor(item)]
     portal_native = [item for item in resolved if item.contact_verification == "portal_native_public_contact"]
     unresolved = [item for item in seeds if not item.phone]
     exact_details = sum(1 for item in seeds if "propertydetails" in item.url.lower() or "-npffid" in item.url.lower())
-    lines = [
-        "OWNERPLOT TWO-ENGINE CONTACT SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}",
-        "Exact-detail resolver first; Engine A inspects explicit structured contact fields on the exact portal detail page. Engine B uses public cross-post and image correlation fallback.",
-        "No OTP/CAPTCHA/subscription bypass is used; a phone is shown only if the exact portal detail data explicitly exposes it or a hard cross-post anchor validates it.",
-        f"Portal owner seeds: {len(seeds)} · Exact detail URLs: {exact_details} · Portal-native contacts: {len(portal_native)} · Total hard-anchored contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}",
-    ]
+    lines = ["OWNERPLOT TWO-ENGINE CONTACT SEARCH", "", f"PRIMARY OWNER SEEDS — {locality.upper()}", "Exact-detail resolver first; Engine A inspects explicit structured contact fields on the exact portal detail page. Engine B uses public cross-post and image correlation fallback.", "No OTP/CAPTCHA/subscription bypass is used; a phone is shown only if the exact portal detail data explicitly exposes it or a hard cross-post anchor validates it.", f"Portal owner seeds: {len(seeds)} · Exact detail URLs: {exact_details} · Portal-native contacts: {len(portal_native)} · Total hard-anchored contacts: {len(resolved)} · Unresolved/rejected: {len(unresolved)}"]
     if not seeds:
         lines.append("No individual MagicBricks/99acres owner listings were found in this run."); return "\n".join(lines)
     for index, item in enumerate(sorted(seeds, key=_priority, reverse=True)[:12], 1):
@@ -91,7 +72,6 @@ def _format_contact_first(locality: str, seeds: list) -> str:
         for evidence in diagnostics[-10:]: lines.append(f"Evidence: {evidence}")
     return "\n".join(lines)
 
-
 async def run(locality: str, telegram: bool = False) -> str:
     query = parse_query(f"plots in {locality}")
     detail_collector = PortalOwnerSeedCollector.from_environment()
@@ -102,35 +82,24 @@ async def run(locality: str, telegram: bool = False) -> str:
         portal_results = await search_profiles(query, profiles=("portals",))
         seeds = [item for item in portal_results if _owner_seed(item)]
     seeds = clean_seed_owner_names(deduplicate(seeds))
-
     exact_resolver = ExactPortalDetailResolver()
-    if seeds:
-        seeds = await exact_resolver.enrich(seeds)
-
+    if seeds: seeds = await exact_resolver.enrich(seeds)
     native_resolver = PortalNativeContactResolver()
-    if seeds:
-        seeds = await native_resolver.enrich(seeds)
+    if seeds: seeds = await native_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
-
     text_resolver = PublicOwnerContactResolver.from_environment()
-    if text_resolver is not None and seeds:
-        seeds = await text_resolver.enrich(seeds)
+    if text_resolver is not None and seeds: seeds = await text_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
-
     image_resolver = PropertyImageContactResolver.from_environment()
-    if image_resolver is not None and seeds:
-        seeds = await image_resolver.enrich(seeds)
+    if image_resolver is not None and seeds: seeds = await image_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
-
     message = _format_contact_first(locality, seeds)
     if telegram: await send_message(message)
     return message
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Resolve publicly exposed contacts for MagicBricks/99acres owner listings")
     parser.add_argument("--locality", default="Kalapatti"); parser.add_argument("--telegram", action="store_true"); args = parser.parse_args()
     print(asyncio.run(run(args.locality, telegram=args.telegram)))
-
 
 if __name__ == "__main__": main()
