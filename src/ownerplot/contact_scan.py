@@ -88,7 +88,7 @@ def _format_contact_first(locality: str, seeds: list) -> str:
             contact = "UNRESOLVED — no qualifying public phone matched yet"
         lines.extend(["", f"{index}. {item.title}", f"{area} · {price}", f"Portal: {_host(item.url)} · Advertiser: {owner}", f"Contact: {contact}", f"Source: {item.url}"])
         diagnostics = [e for e in item.evidence if e.startswith("Exact-detail") or e.startswith("Portal-native") or e.startswith("portal-native") or e.startswith("Contact hunt checked") or e.startswith("Image hunt") or e.startswith("Public phone found") or e.startswith("Contact match score") or e.startswith("Rejected public phone") or e.startswith("same property")]
-        for evidence in diagnostics[-8:]: lines.append(f"Evidence: {evidence}")
+        for evidence in diagnostics[-10:]: lines.append(f"Evidence: {evidence}")
     return "\n".join(lines)
 
 
@@ -103,24 +103,20 @@ async def run(locality: str, telegram: bool = False) -> str:
         seeds = [item for item in portal_results if _owner_seed(item)]
     seeds = clean_seed_owner_names(deduplicate(seeds))
 
-    # Resolve category/overview owner cards to the exact individual MagicBricks detail URL.
     exact_resolver = ExactPortalDetailResolver()
     if seeds:
         seeds = await exact_resolver.enrich(seeds)
 
-    # Engine A: explicit structured contact fields on the exact portal detail response.
     native_resolver = PortalNativeContactResolver()
     if seeds:
         seeds = await native_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
 
-    # Engine B1: public cross-post correlation for unresolved portal owner seeds.
     text_resolver = PublicOwnerContactResolver.from_environment()
     if text_resolver is not None and seeds:
         seeds = await text_resolver.enrich(seeds)
     seeds = _reject_weak_contacts(deduplicate(seeds))
 
-    # Engine B2: property-photo correlation for still-unresolved seeds.
     image_resolver = PropertyImageContactResolver.from_environment()
     if image_resolver is not None and seeds:
         seeds = await image_resolver.enrich(seeds)
