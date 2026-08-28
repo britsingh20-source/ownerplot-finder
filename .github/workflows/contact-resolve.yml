@@ -11,6 +11,7 @@ on:
       - "src/ownerplot/portal_native_contact.py"
       - "src/ownerplot/image_contact_resolver.py"
       - "src/ownerplot/portal_seeds.py"
+      - "src/ownerplot/realestateindia_collector.py"
       - "src/ownerplot/seed_cleanup.py"
       - ".github/workflows/contact-resolve.yml"
       - "config/allowed-public-domains.txt"
