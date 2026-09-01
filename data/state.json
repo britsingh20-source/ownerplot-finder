@@ -36,6 +36,7 @@
     "SITRA|direct_sources",
     "Saibaba Colony|direct_sources",
     "Saravanampatti|direct_sources",
+    "Saravanampatti|portals",
     "Saravanampatti|public_contacts",
     "Singanallur|direct_sources",
     "Somayampalayam|direct_sources",
@@ -50,22 +51,23 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Saravanampatti",
-    "probable_owners": 7,
+    "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 11,
+    "public_contacts": 2,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "youtube.com"
+      "99acres.com",
+      "magicbricks.com",
+      "olx.in",
+      "quikr.com"
     ],
-    "unique_listings": 14,
+    "unique_listings": 8,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 4,
+  "scan_cursor": 5,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
@@ -158,17 +160,23 @@
     "Saibaba Colony": [],
     "Saravanampatti": [
       "0366c9a105422aa5d345",
+      "2e29331f7fdeda817e09",
+      "2e4a1dd941ddb5530e58",
+      "2ea61a8f1b8285b107ef",
       "32234dc2d083635ec7b6",
       "325df40535cce2a7065b",
       "3ca3727b8bf645d6fc8b",
       "5750b1d72bb3f456dd73",
       "60511ac86432dd0a8d53",
       "7029ac734abfbf92b5ba",
+      "77b518f2b37f588bc18f",
       "801155a1ef5879a36d39",
       "897b1a2bb8d1d8a8d6ed",
       "9e8c8a7d96c1ec148f26",
+      "b4d69505d071dbbae316",
       "b9d7de1babb9e514cca8",
       "c0e4ed8ceec2daa68096",
+      "ce6410f11ac9f917720c",
       "fc712a5fa192f20f3f1b",
       "fef28863b7a3e48220a9",
       "ffb33a3e1186ca5591d6"
