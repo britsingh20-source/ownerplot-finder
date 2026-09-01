@@ -36,6 +36,7 @@
     "SITRA|direct_sources",
     "Saibaba Colony|direct_sources",
     "Saravanampatti|direct_sources",
+    "Saravanampatti|local_sites",
     "Saravanampatti|portals",
     "Saravanampatti|public_contacts",
     "Singanallur|direct_sources",
@@ -53,21 +54,19 @@
     "locality": "Saravanampatti",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 2,
+    "public_contacts": 1,
     "sources": [
-      "99acres.com",
-      "magicbricks.com",
-      "olx.in",
-      "quikr.com"
+      "adissia.com",
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 8,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 5,
+  "scan_cursor": 6,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
@@ -172,6 +171,7 @@
       "77b518f2b37f588bc18f",
       "801155a1ef5879a36d39",
       "897b1a2bb8d1d8a8d6ed",
+      "98cce0a2caf5eba37e91",
       "9e8c8a7d96c1ec148f26",
       "b4d69505d071dbbae316",
       "b9d7de1babb9e514cca8",
