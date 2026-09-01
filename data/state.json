@@ -51,22 +51,19 @@
     "locality": "Kalapatti",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 2,
+    "public_contacts": 1,
     "sources": [
-      "99acres.com",
-      "commonfloor.com",
-      "housing.com",
-      "magicbricks.com",
-      "olx.in"
+      "adissia.com",
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 13,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 2,
+  "scan_cursor": 3,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
