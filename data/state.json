@@ -47,6 +47,7 @@
     "Veerappandi|direct_sources",
     "Vellakinar|direct_sources",
     "Vilankurichi|direct_sources",
+    "Vilankurichi|local_sites",
     "Vilankurichi|portals",
     "Vilankurichi|public_contacts"
   ],
@@ -56,21 +57,18 @@
     "locality": "Vilankurichi",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [
-      "99acres.com",
-      "magicbricks.com",
-      "olx.in",
-      "property.sulekha.com"
+      "adissia.com"
     ],
-    "unique_listings": 8,
+    "unique_listings": 1,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 8,
+  "scan_cursor": 9,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
