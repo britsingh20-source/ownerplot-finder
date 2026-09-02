@@ -30,6 +30,7 @@
     "Papampatti|direct_sources",
     "Pattanam|direct_sources",
     "Peelamedu|direct_sources",
+    "Peelamedu|public_contacts",
     "Perur|direct_sources",
     "RS Puram|direct_sources",
     "Race Course|direct_sources",
@@ -54,21 +55,23 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Vilankurichi",
-    "probable_owners": 0,
+    "locality": "Peelamedu",
+    "probable_owners": 2,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 0,
+    "public_contacts": 6,
     "sources": [
-      "adissia.com"
+      "facebook.com",
+      "instagram.com",
+      "youtube.com"
     ],
-    "unique_listings": 1,
+    "unique_listings": 7,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 9,
+  "scan_cursor": 10,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
@@ -153,7 +156,15 @@
     "Pannimadai": [],
     "Papampatti": [],
     "Pattanam": [],
-    "Peelamedu": [],
+    "Peelamedu": [
+      "54a712cda128119c287c",
+      "5c8737a8d153b6746502",
+      "9e1c358aa2ad0c3a2ef2",
+      "b6ec45a2fd3a4929fccc",
+      "c285cc646035cc2600c0",
+      "c84abd02ac12acdc56e8",
+      "ed391b76c8ce768442d3"
+    ],
     "Perur": [],
     "RS Puram": [],
     "Race Course": [],
