@@ -30,6 +30,7 @@
     "Papampatti|direct_sources",
     "Pattanam|direct_sources",
     "Peelamedu|direct_sources",
+    "Peelamedu|local_sites",
     "Peelamedu|portals",
     "Peelamedu|public_contacts",
     "Perur|direct_sources",
@@ -59,23 +60,18 @@
     "locality": "Peelamedu",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 0,
+    "public_contacts": 1,
     "sources": [
-      "99acres.com",
-      "housing.com",
-      "magicbricks.com",
-      "olx.in",
-      "quikr.com",
-      "roofandfloor.com"
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 13,
+    "unique_listings": 1,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 11,
+  "scan_cursor": 12,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
@@ -178,6 +174,7 @@
       "c285cc646035cc2600c0",
       "c84abd02ac12acdc56e8",
       "ca0f94698f7401cce13f",
+      "e920d718a6cefc5ede85",
       "ed391b76c8ce768442d3",
       "eff87716f6d66d7882b7"
     ],
