@@ -47,29 +47,30 @@
     "Veerappandi|direct_sources",
     "Vellakinar|direct_sources",
     "Vilankurichi|direct_sources",
+    "Vilankurichi|portals",
     "Vilankurichi|public_contacts"
   ],
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
     "locality": "Vilankurichi",
-    "probable_owners": 8,
+    "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 11,
+    "public_contacts": 0,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "m.youtube.com",
-      "youtube.com"
+      "99acres.com",
+      "magicbricks.com",
+      "olx.in",
+      "property.sulekha.com"
     ],
-    "unique_listings": 12,
+    "unique_listings": 8,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 7,
+  "scan_cursor": 8,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
@@ -196,14 +197,21 @@
       "2b4da32c0952035dcaea",
       "2cd3c57b609dcb34fd95",
       "3e7e0f428a5bf9bce9b2",
+      "4b30331e0d9b677e69bb",
+      "4c52265d9074efa95788",
+      "61a6f72774fe04078418",
       "63982a963fef7f6d61f0",
       "8e222f3c24f2fed33f14",
+      "949b22c8e19569f4002e",
       "9f4aed9630ef02975991",
       "a26e0974d03d18848b05",
       "b2ef87798899c54eb252",
+      "cb239eee1ba5195c084d",
       "d1b25829dfbf0bc1a161",
       "d2c2503a9660accc8a3c",
-      "e41b16c2c37e59b9e270"
+      "dc44406fe87cef10ced7",
+      "e41b16c2c37e59b9e270",
+      "e56bc6401a50b0c41412"
     ]
   },
   "telegram_update_offset": 0
