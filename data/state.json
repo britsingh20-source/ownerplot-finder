@@ -30,6 +30,7 @@
     "Papampatti|direct_sources",
     "Pattanam|direct_sources",
     "Peelamedu|direct_sources",
+    "Peelamedu|portals",
     "Peelamedu|public_contacts",
     "Perur|direct_sources",
     "RS Puram|direct_sources",
@@ -56,22 +57,25 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Peelamedu",
-    "probable_owners": 2,
+    "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 6,
+    "public_contacts": 0,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "youtube.com"
+      "99acres.com",
+      "housing.com",
+      "magicbricks.com",
+      "olx.in",
+      "quikr.com",
+      "roofandfloor.com"
     ],
-    "unique_listings": 7,
+    "unique_listings": 13,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 10,
+  "scan_cursor": 11,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
@@ -157,13 +161,25 @@
     "Papampatti": [],
     "Pattanam": [],
     "Peelamedu": [
+      "43901316aab686dc165d",
+      "439bb2295a52b961f4d9",
       "54a712cda128119c287c",
       "5c8737a8d153b6746502",
+      "686f9dd4bbb842081c81",
+      "6f79fe6b76b12a4c5e01",
+      "9ba3f7942e444dd493d4",
       "9e1c358aa2ad0c3a2ef2",
+      "a3549f9a14e6114215b6",
+      "b27493c01f0c2748d1ed",
+      "b3638d71861fbb829ecc",
       "b6ec45a2fd3a4929fccc",
+      "bfca6a1bfbf22d95fc28",
+      "c0b8d8968f23c1a7043f",
       "c285cc646035cc2600c0",
       "c84abd02ac12acdc56e8",
-      "ed391b76c8ce768442d3"
+      "ca0f94698f7401cce13f",
+      "ed391b76c8ce768442d3",
+      "eff87716f6d66d7882b7"
     ],
     "Perur": [],
     "RS Puram": [],
