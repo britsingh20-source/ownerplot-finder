@@ -46,27 +46,30 @@
     "Vadavalli|direct_sources",
     "Veerappandi|direct_sources",
     "Vellakinar|direct_sources",
-    "Vilankurichi|direct_sources"
+    "Vilankurichi|direct_sources",
+    "Vilankurichi|public_contacts"
   ],
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Saravanampatti",
-    "probable_owners": 0,
+    "locality": "Vilankurichi",
+    "probable_owners": 8,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 11,
     "sources": [
-      "adissia.com",
-      "srisasthabuilders.com"
+      "facebook.com",
+      "instagram.com",
+      "m.youtube.com",
+      "youtube.com"
     ],
-    "unique_listings": 2,
+    "unique_listings": 12,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 6,
+  "scan_cursor": 7,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
@@ -188,7 +191,20 @@
     "Vadavalli": [],
     "Veerappandi": [],
     "Vellakinar": [],
-    "Vilankurichi": []
+    "Vilankurichi": [
+      "182ff0aad3ce3aebd8a0",
+      "2b4da32c0952035dcaea",
+      "2cd3c57b609dcb34fd95",
+      "3e7e0f428a5bf9bce9b2",
+      "63982a963fef7f6d61f0",
+      "8e222f3c24f2fed33f14",
+      "9f4aed9630ef02975991",
+      "a26e0974d03d18848b05",
+      "b2ef87798899c54eb252",
+      "d1b25829dfbf0bc1a161",
+      "d2c2503a9660accc8a3c",
+      "e41b16c2c37e59b9e270"
+    ]
   },
   "telegram_update_offset": 0
 }
