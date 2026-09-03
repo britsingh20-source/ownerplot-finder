@@ -3,6 +3,7 @@
     "Annur|direct_sources",
     "Chinnavedampatti|direct_sources",
     "Civil Aerodrome|direct_sources",
+    "Civil Aerodrome|portals",
     "Civil Aerodrome|public_contacts",
     "Eachanari|direct_sources",
     "Ganapathy|direct_sources",
@@ -59,34 +60,40 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Civil Aerodrome",
-    "probable_owners": 6,
+    "probable_owners": 1,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 11,
+    "public_contacts": 2,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "m.youtube.com",
-      "youtube.com"
+      "housing.com",
+      "magicbricks.com",
+      "olx.in"
     ],
-    "unique_listings": 12,
+    "unique_listings": 8,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 13,
+  "scan_cursor": 14,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
     "Civil Aerodrome": [
+      "1efce2b2e46184ec7e46",
       "494cd80c7455c525b170",
       "4ad480615571e23fe2a8",
       "540addd6c78d02bd0b5a",
+      "5b1d5cd4b09d7769b0c7",
+      "5bf4cee15d6c2060d967",
+      "604111806a4f6d43713f",
       "685c6243c1a757d0b212",
       "8ebec9bb13e955fa4c0a",
       "93300c1aa562caffdb8f",
       "adc4aed227e7f6bd0e33",
+      "c2fd9d460b0ccf2d12ae",
+      "dcd69b92d4ac0fdaa697",
+      "e3ae31300193873e1da0",
       "e80c26ad2ffe6e4ebb30",
       "ed568742bf3c7ef89f42",
       "edc41034d9eedce55910",
