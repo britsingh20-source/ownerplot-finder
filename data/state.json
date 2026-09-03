@@ -3,6 +3,7 @@
     "Annur|direct_sources",
     "Chinnavedampatti|direct_sources",
     "Civil Aerodrome|direct_sources",
+    "Civil Aerodrome|local_sites",
     "Civil Aerodrome|portals",
     "Civil Aerodrome|public_contacts",
     "Eachanari|direct_sources",
@@ -60,26 +61,28 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Civil Aerodrome",
-    "probable_owners": 1,
+    "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 2,
+    "public_contacts": 1,
     "sources": [
-      "housing.com",
-      "magicbricks.com",
-      "olx.in"
+      "adissia.com",
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 8,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 14,
+  "scan_cursor": 15,
   "seen": {
-    "Annur": [],
+    "Annur": [
+      "d06773ec81b08db5f760"
+    ],
     "Chinnavedampatti": [],
     "Civil Aerodrome": [
+      "09313975f49a61ee8b78",
       "1efce2b2e46184ec7e46",
       "494cd80c7455c525b170",
       "4ad480615571e23fe2a8",
