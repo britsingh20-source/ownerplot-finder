@@ -40,6 +40,7 @@
     "RS Puram|direct_sources",
     "Race Course|direct_sources",
     "SITRA|direct_sources",
+    "SITRA|public_contacts",
     "Saibaba Colony|direct_sources",
     "Saravanampatti|direct_sources",
     "Saravanampatti|local_sites",
@@ -60,22 +61,19 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Civil Aerodrome",
+    "locality": "SITRA",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
-    "sources": [
-      "adissia.com",
-      "srisasthabuilders.com"
-    ],
-    "unique_listings": 2,
+    "public_contacts": 0,
+    "sources": [],
+    "unique_listings": 0,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 15,
+  "scan_cursor": 16,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
