@@ -40,6 +40,7 @@
     "RS Puram|direct_sources",
     "Race Course|direct_sources",
     "SITRA|direct_sources",
+    "SITRA|portals",
     "SITRA|public_contacts",
     "Saibaba Colony|direct_sources",
     "Saravanampatti|direct_sources",
@@ -62,18 +63,22 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "SITRA",
-    "probable_owners": 0,
+    "probable_owners": 1,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 0,
-    "sources": [],
-    "unique_listings": 0,
+    "public_contacts": 1,
+    "sources": [
+      "99acres.com",
+      "magicbricks.com",
+      "olx.in"
+    ],
+    "unique_listings": 10,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 16,
+  "scan_cursor": 17,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -206,7 +211,18 @@
     "Perur": [],
     "RS Puram": [],
     "Race Course": [],
-    "SITRA": [],
+    "SITRA": [
+      "1cb8668eca83f866b126",
+      "25c17c893c18cf1907da",
+      "3735bd4af24d4ed30946",
+      "3e1fd6d0515e907ef390",
+      "7ed4b7f5d6e9d9446365",
+      "9e56cf54ce842777567e",
+      "be59afff6967fed4191e",
+      "c092facd71f286f36d00",
+      "fc5e0e3106f818bf6c76",
+      "fdbff83e096f5b640023"
+    ],
     "Saibaba Colony": [],
     "Saravanampatti": [
       "0366c9a105422aa5d345",
