@@ -3,6 +3,7 @@
     "Annur|direct_sources",
     "Chinnavedampatti|direct_sources",
     "Civil Aerodrome|direct_sources",
+    "Civil Aerodrome|public_contacts",
     "Eachanari|direct_sources",
     "Ganapathy|direct_sources",
     "Irugur|direct_sources",
@@ -57,25 +58,41 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Peelamedu",
-    "probable_owners": 0,
+    "locality": "Civil Aerodrome",
+    "probable_owners": 6,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 11,
     "sources": [
-      "srisasthabuilders.com"
+      "facebook.com",
+      "instagram.com",
+      "m.youtube.com",
+      "youtube.com"
     ],
-    "unique_listings": 1,
+    "unique_listings": 12,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 12,
+  "scan_cursor": 13,
   "seen": {
     "Annur": [],
     "Chinnavedampatti": [],
-    "Civil Aerodrome": [],
+    "Civil Aerodrome": [
+      "494cd80c7455c525b170",
+      "4ad480615571e23fe2a8",
+      "540addd6c78d02bd0b5a",
+      "685c6243c1a757d0b212",
+      "8ebec9bb13e955fa4c0a",
+      "93300c1aa562caffdb8f",
+      "adc4aed227e7f6bd0e33",
+      "e80c26ad2ffe6e4ebb30",
+      "ed568742bf3c7ef89f42",
+      "edc41034d9eedce55910",
+      "f5683dc0745625ad46dc",
+      "fcc6103d8f633939268b"
+    ],
     "Eachanari": [],
     "Ganapathy": [],
     "Irugur": [],
