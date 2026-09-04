@@ -58,6 +58,7 @@
     "Somayampalayam|direct_sources",
     "Sulur|direct_sources",
     "Thudiyalur|direct_sources",
+    "Thudiyalur|public_contacts",
     "Vadavalli|direct_sources",
     "Veerappandi|direct_sources",
     "Vellakinar|direct_sources",
@@ -69,22 +70,23 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Kurumbapalayam",
-    "probable_owners": 0,
+    "locality": "Thudiyalur",
+    "probable_owners": 8,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 11,
     "sources": [
-      "adissia.com",
-      "srisasthabuilders.com"
+      "facebook.com",
+      "instagram.com",
+      "youtube.com"
     ],
-    "unique_listings": 2,
+    "unique_listings": 13,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 24,
+  "scan_cursor": 25,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -301,7 +303,21 @@
     "Singanallur": [],
     "Somayampalayam": [],
     "Sulur": [],
-    "Thudiyalur": [],
+    "Thudiyalur": [
+      "038aee9ca78f1c6aa393",
+      "04f9ac4f0d11bd92d56f",
+      "08de9e2b49648f7be1a4",
+      "0aa169f3dbad35022a7e",
+      "3423a1d6b620ff780c36",
+      "45586aa090ff2136b844",
+      "63129fac045d231b6f8f",
+      "6baadc5dab42b3b9975b",
+      "6c7074f1a3359ec4b74e",
+      "805fb042b15f53ffdb66",
+      "835b2e220aa0c02bebbb",
+      "9dfbdf697481379ecf1f",
+      "bc8991549eca347a2775"
+    ],
     "Vadavalli": [],
     "Veerappandi": [],
     "Vellakinar": [],
