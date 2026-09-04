@@ -27,6 +27,7 @@
     "Nadupalayam|direct_sources",
     "Neelambur|direct_sources",
     "Nehru Nagar|direct_sources",
+    "Nehru Nagar|local_sites",
     "Nehru Nagar|portals",
     "Nehru Nagar|public_contacts",
     "Ondipudur|direct_sources",
@@ -68,19 +69,19 @@
     "locality": "Nehru Nagar",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 2,
+    "public_contacts": 1,
     "sources": [
-      "magicbricks.com",
-      "olx.in"
+      "adissia.com",
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 6,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 20,
+  "scan_cursor": 21,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -190,6 +191,7 @@
       "5250b3bfa908b3c0d83a",
       "5615912195ae918e31a6",
       "5a1deea5a788310c38d2",
+      "5b34d5e66bb753160167",
       "6592d97c12cf3709f384",
       "757b0878f8b80645f1bc",
       "7cb7431faa68628f6d06",
