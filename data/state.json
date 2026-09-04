@@ -20,6 +20,7 @@
     "Kovilpalayam|direct_sources",
     "Kuniyamuthur|direct_sources",
     "Kurumbapalayam|direct_sources",
+    "Kurumbapalayam|public_contacts",
     "Madukkarai|direct_sources",
     "Malumichampatti|direct_sources",
     "Mettupalayam|direct_sources",
@@ -66,22 +67,23 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Nehru Nagar",
-    "probable_owners": 0,
+    "locality": "Kurumbapalayam",
+    "probable_owners": 6,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 10,
     "sources": [
-      "adissia.com",
-      "srisasthabuilders.com"
+      "facebook.com",
+      "instagram.com",
+      "youtube.com"
     ],
-    "unique_listings": 2,
+    "unique_listings": 12,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 21,
+  "scan_cursor": 22,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -173,7 +175,18 @@
     ],
     "Kuniyamuthur": [],
     "Kurumbapalayam": [
-      "c5befa08360010b4d645"
+      "29aec7fad259773e077d",
+      "436cef87e58449c1dd5c",
+      "44f1ec638452a83d09d1",
+      "4f2131cda2fc11c38675",
+      "51ede99ff2bfa618a981",
+      "5812e1b4e3512207ac15",
+      "a31a462d1bb0f11bb4b5",
+      "ba44c9627b565950f4e0",
+      "c5befa08360010b4d645",
+      "c8ddb4103751a5d52a4f",
+      "e96e2cde0fbb0b841f9d",
+      "efefe29eeeeee4a03989"
     ],
     "Madukkarai": [],
     "Malumichampatti": [],
