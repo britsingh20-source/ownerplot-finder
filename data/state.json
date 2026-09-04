@@ -20,6 +20,7 @@
     "Kovilpalayam|direct_sources",
     "Kuniyamuthur|direct_sources",
     "Kurumbapalayam|direct_sources",
+    "Kurumbapalayam|local_sites",
     "Kurumbapalayam|portals",
     "Kurumbapalayam|public_contacts",
     "Madukkarai|direct_sources",
@@ -69,24 +70,21 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Kurumbapalayam",
-    "probable_owners": 1,
+    "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 1,
     "sources": [
-      "99acres.com",
-      "housing.com",
-      "magicbricks.com",
-      "olx.in",
-      "roofandfloor.com"
+      "adissia.com",
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 10,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 23,
+  "scan_cursor": 24,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -189,6 +187,7 @@
       "51ede99ff2bfa618a981",
       "5812e1b4e3512207ac15",
       "58875d87f7492e2ffe03",
+      "821f3bce04ba8fb97dcb",
       "8f6c2d452334c3d88f81",
       "a31a462d1bb0f11bb4b5",
       "a69d4d9f5c343d4ac447",
