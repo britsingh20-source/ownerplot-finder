@@ -27,6 +27,7 @@
     "Nadupalayam|direct_sources",
     "Neelambur|direct_sources",
     "Nehru Nagar|direct_sources",
+    "Nehru Nagar|portals",
     "Nehru Nagar|public_contacts",
     "Ondipudur|direct_sources",
     "Othakalmandapam|direct_sources",
@@ -65,22 +66,21 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Nehru Nagar",
-    "probable_owners": 6,
+    "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 11,
+    "public_contacts": 2,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "youtube.com"
+      "magicbricks.com",
+      "olx.in"
     ],
-    "unique_listings": 12,
+    "unique_listings": 6,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 19,
+  "scan_cursor": 20,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -185,15 +185,20 @@
     "Nehru Nagar": [
       "186cef9c1fb6976dda16",
       "2c7911a5f773079ee7be",
+      "350d389ae15c3b1da60e",
       "3b522f7c6465117e20a6",
+      "5250b3bfa908b3c0d83a",
       "5615912195ae918e31a6",
       "5a1deea5a788310c38d2",
       "6592d97c12cf3709f384",
       "757b0878f8b80645f1bc",
       "7cb7431faa68628f6d06",
+      "9ed7a4e012699389afc5",
       "b917f968a9be896e0fa1",
       "c99e48bbedf00f236341",
       "dfd3bdddf8c2a84de1d0",
+      "e5c90c8e7076219f169f",
+      "f06f7bc8ac0dff314e36",
       "f97515adf4dfc1ff98c5"
     ],
     "Ondipudur": [],
