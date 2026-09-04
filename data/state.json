@@ -20,6 +20,7 @@
     "Kovilpalayam|direct_sources",
     "Kuniyamuthur|direct_sources",
     "Kurumbapalayam|direct_sources",
+    "Kurumbapalayam|portals",
     "Kurumbapalayam|public_contacts",
     "Madukkarai|direct_sources",
     "Malumichampatti|direct_sources",
@@ -68,22 +69,24 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Kurumbapalayam",
-    "probable_owners": 6,
+    "probable_owners": 1,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 10,
+    "public_contacts": 1,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "youtube.com"
+      "99acres.com",
+      "housing.com",
+      "magicbricks.com",
+      "olx.in",
+      "roofandfloor.com"
     ],
-    "unique_listings": 12,
+    "unique_listings": 10,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 22,
+  "scan_cursor": 23,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -175,14 +178,23 @@
     ],
     "Kuniyamuthur": [],
     "Kurumbapalayam": [
+      "18b1b00736a078f635bf",
       "29aec7fad259773e077d",
+      "3a6fd03d169b3accd4e2",
       "436cef87e58449c1dd5c",
       "44f1ec638452a83d09d1",
+      "48b119830af9e262dcb2",
+      "4e40a6d2ff287b752fb7",
       "4f2131cda2fc11c38675",
       "51ede99ff2bfa618a981",
       "5812e1b4e3512207ac15",
+      "58875d87f7492e2ffe03",
+      "8f6c2d452334c3d88f81",
       "a31a462d1bb0f11bb4b5",
+      "a69d4d9f5c343d4ac447",
+      "ae5641e3212d32bf15da",
       "ba44c9627b565950f4e0",
+      "c56306502dd8bba799c0",
       "c5befa08360010b4d645",
       "c8ddb4103751a5d52a4f",
       "e96e2cde0fbb0b841f9d",
