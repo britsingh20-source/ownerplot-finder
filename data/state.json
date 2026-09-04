@@ -27,6 +27,7 @@
     "Nadupalayam|direct_sources",
     "Neelambur|direct_sources",
     "Nehru Nagar|direct_sources",
+    "Nehru Nagar|public_contacts",
     "Ondipudur|direct_sources",
     "Othakalmandapam|direct_sources",
     "Pannimadai|direct_sources",
@@ -63,24 +64,23 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "SITRA",
-    "probable_owners": 0,
+    "locality": "Nehru Nagar",
+    "probable_owners": 6,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 11,
     "sources": [
       "facebook.com",
-      "housing.com",
       "instagram.com",
-      "magicbricks.com"
+      "youtube.com"
     ],
-    "unique_listings": 4,
+    "unique_listings": 12,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 18,
+  "scan_cursor": 19,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -182,7 +182,20 @@
     "NGGO Colony": [],
     "Nadupalayam": [],
     "Neelambur": [],
-    "Nehru Nagar": [],
+    "Nehru Nagar": [
+      "186cef9c1fb6976dda16",
+      "2c7911a5f773079ee7be",
+      "3b522f7c6465117e20a6",
+      "5615912195ae918e31a6",
+      "5a1deea5a788310c38d2",
+      "6592d97c12cf3709f384",
+      "757b0878f8b80645f1bc",
+      "7cb7431faa68628f6d06",
+      "b917f968a9be896e0fa1",
+      "c99e48bbedf00f236341",
+      "dfd3bdddf8c2a84de1d0",
+      "f97515adf4dfc1ff98c5"
+    ],
     "Ondipudur": [],
     "Othakalmandapam": [],
     "Pannimadai": [],
