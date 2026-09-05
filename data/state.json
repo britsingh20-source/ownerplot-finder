@@ -58,6 +58,7 @@
     "Somayampalayam|direct_sources",
     "Sulur|direct_sources",
     "Thudiyalur|direct_sources",
+    "Thudiyalur|portals",
     "Thudiyalur|public_contacts",
     "Vadavalli|direct_sources",
     "Veerappandi|direct_sources",
@@ -71,22 +72,23 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Thudiyalur",
-    "probable_owners": 8,
+    "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 11,
+    "public_contacts": 7,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "youtube.com"
+      "99acres.com",
+      "magicbricks.com",
+      "olx.in",
+      "roofandfloor.com"
     ],
-    "unique_listings": 13,
+    "unique_listings": 16,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 25,
+  "scan_cursor": 26,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -306,17 +308,32 @@
     "Thudiyalur": [
       "038aee9ca78f1c6aa393",
       "04f9ac4f0d11bd92d56f",
+      "08bc04514d5755dabc59",
       "08de9e2b49648f7be1a4",
       "0aa169f3dbad35022a7e",
+      "12a4442934653c6b7d50",
+      "23a434ba36184eaab4fb",
+      "25ab7d54e62563f6d012",
       "3423a1d6b620ff780c36",
+      "3f72832ca2bcc73522aa",
       "45586aa090ff2136b844",
+      "4663075c857c0c87c4b1",
+      "4bb084cf5c432a883ce7",
+      "5d5e8b9f99d1dd588924",
       "63129fac045d231b6f8f",
       "6baadc5dab42b3b9975b",
       "6c7074f1a3359ec4b74e",
       "805fb042b15f53ffdb66",
       "835b2e220aa0c02bebbb",
+      "9553a2b76fd95798cdc5",
+      "9a2746995672cab59cee",
       "9dfbdf697481379ecf1f",
-      "bc8991549eca347a2775"
+      "bc8991549eca347a2775",
+      "bd2c723ee4bd529fef6f",
+      "ce718021cc203bca5e8c",
+      "e443973b6e2bad23a763",
+      "ec1a8299807c4ec3ed4f",
+      "f07970ba7fa8e4ed5c24"
     ],
     "Vadavalli": [],
     "Veerappandi": [],
