@@ -64,6 +64,7 @@
     "Vadavalli|direct_sources",
     "Veerappandi|direct_sources",
     "Vellakinar|direct_sources",
+    "Vellakinar|public_contacts",
     "Vilankurichi|direct_sources",
     "Vilankurichi|local_sites",
     "Vilankurichi|portals",
@@ -72,22 +73,24 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Thudiyalur",
-    "probable_owners": 0,
+    "locality": "Vellakinar",
+    "probable_owners": 8,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 12,
     "sources": [
-      "adissia.com",
-      "echovalley.adissia.com"
+      "facebook.com",
+      "instagram.com",
+      "m.youtube.com",
+      "youtube.com"
     ],
-    "unique_listings": 2,
+    "unique_listings": 14,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 27,
+  "scan_cursor": 28,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -337,7 +340,22 @@
     ],
     "Vadavalli": [],
     "Veerappandi": [],
-    "Vellakinar": [],
+    "Vellakinar": [
+      "1483d5dbaa49ef537a3c",
+      "22372d649a9adcc64e16",
+      "341de8774c8123b5e3cd",
+      "51cba7c5278415696f0a",
+      "57f82d540362d7d01c3f",
+      "5b723ccdb48112c0ba00",
+      "6e59a10f34db16d65f68",
+      "9089f939659f46f7c017",
+      "991252a72f446ed944cd",
+      "9bd1a59c625c81689f3f",
+      "ad3f91835524e609f2de",
+      "b75bf7fc7241571510e8",
+      "c34fbad9e8df98c440bd",
+      "c8f5863b08422a250f13"
+    ],
     "Vilankurichi": [
       "182ff0aad3ce3aebd8a0",
       "2b4da32c0952035dcaea",
