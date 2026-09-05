@@ -27,6 +27,7 @@
     "Malumichampatti|direct_sources",
     "Mettupalayam|direct_sources",
     "NGGO Colony|direct_sources",
+    "NGGO Colony|public_contacts",
     "Nadupalayam|direct_sources",
     "Neelambur|direct_sources",
     "Nehru Nagar|direct_sources",
@@ -75,22 +76,24 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Vellakinar",
-    "probable_owners": 0,
+    "locality": "NGGO Colony",
+    "probable_owners": 7,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 12,
     "sources": [
-      "adissia.com",
-      "srisasthabuilders.com"
+      "facebook.com",
+      "instagram.com",
+      "m.youtube.com",
+      "youtube.com"
     ],
-    "unique_listings": 2,
+    "unique_listings": 13,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 30,
+  "scan_cursor": 31,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -210,7 +213,21 @@
     "Mettupalayam": [
       "9a42eac5ae3170f145a5"
     ],
-    "NGGO Colony": [],
+    "NGGO Colony": [
+      "24bb71806fc32df17125",
+      "343a69c9eee085528e1c",
+      "672d7be2205c04ce4a0a",
+      "7fe9b8c55d0f0e25243f",
+      "804c6893b8eb8eda0946",
+      "90d1c10ed35deec1ba2a",
+      "a1a87f44be6dc19332d5",
+      "acdfb5e4f71676dfd6b9",
+      "b3206a47af107f520a4d",
+      "bc153853f913fee7b5ac",
+      "c5f2f2a1ddffcb28a9b6",
+      "cd5f28b31be820a5cbb7",
+      "f4de52203dbf72d881e6"
+    ],
     "Nadupalayam": [],
     "Neelambur": [],
     "Nehru Nagar": [
