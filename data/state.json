@@ -27,6 +27,7 @@
     "Malumichampatti|direct_sources",
     "Mettupalayam|direct_sources",
     "NGGO Colony|direct_sources",
+    "NGGO Colony|local_sites",
     "NGGO Colony|portals",
     "NGGO Colony|public_contacts",
     "Nadupalayam|direct_sources",
@@ -78,23 +79,21 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "NGGO Colony",
-    "probable_owners": 1,
+    "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 1,
     "sources": [
-      "99acres.com",
-      "magicbricks.com",
-      "olx.in",
-      "quikr.com"
+      "adissia.com",
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 10,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 32,
+  "scan_cursor": 33,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -236,6 +235,7 @@
       "cd334eadcb7bbadc1d32",
       "cd5f28b31be820a5cbb7",
       "d1f6d3ec89b8245bce06",
+      "d3d07e1fb727eea2087d",
       "f4de52203dbf72d881e6"
     ],
     "Nadupalayam": [],
