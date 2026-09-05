@@ -64,6 +64,7 @@
     "Vadavalli|direct_sources",
     "Veerappandi|direct_sources",
     "Vellakinar|direct_sources",
+    "Vellakinar|local_sites",
     "Vellakinar|portals",
     "Vellakinar|public_contacts",
     "Vilankurichi|direct_sources",
@@ -77,20 +78,19 @@
     "locality": "Vellakinar",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 0,
+    "public_contacts": 1,
     "sources": [
-      "99acres.com",
-      "magicbricks.com",
-      "roofandfloor.com"
+      "adissia.com",
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 12,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 29,
+  "scan_cursor": 30,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -352,6 +352,7 @@
       "5b723ccdb48112c0ba00",
       "69a2b48fec3cd4c73e4a",
       "6e59a10f34db16d65f68",
+      "7842bec8df1072116c52",
       "8261eb44050c9bcfb00a",
       "852559d746c8163f376f",
       "9089f939659f46f7c017",
