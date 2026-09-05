@@ -64,6 +64,7 @@
     "Vadavalli|direct_sources",
     "Veerappandi|direct_sources",
     "Vellakinar|direct_sources",
+    "Vellakinar|portals",
     "Vellakinar|public_contacts",
     "Vilankurichi|direct_sources",
     "Vilankurichi|local_sites",
@@ -74,23 +75,22 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Vellakinar",
-    "probable_owners": 8,
+    "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 12,
+    "public_contacts": 0,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "m.youtube.com",
-      "youtube.com"
+      "99acres.com",
+      "magicbricks.com",
+      "roofandfloor.com"
     ],
-    "unique_listings": 14,
+    "unique_listings": 12,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 28,
+  "scan_cursor": 29,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -341,20 +341,31 @@
     "Vadavalli": [],
     "Veerappandi": [],
     "Vellakinar": [
+      "04e9563fefbb070d8b94",
       "1483d5dbaa49ef537a3c",
+      "17cdc89365445a37ed57",
+      "1875277d8ef7400ad672",
       "22372d649a9adcc64e16",
       "341de8774c8123b5e3cd",
       "51cba7c5278415696f0a",
       "57f82d540362d7d01c3f",
       "5b723ccdb48112c0ba00",
+      "69a2b48fec3cd4c73e4a",
       "6e59a10f34db16d65f68",
+      "8261eb44050c9bcfb00a",
+      "852559d746c8163f376f",
       "9089f939659f46f7c017",
+      "9667574a03bfe9ee3949",
       "991252a72f446ed944cd",
       "9bd1a59c625c81689f3f",
       "ad3f91835524e609f2de",
+      "ad456662c93489e1da73",
       "b75bf7fc7241571510e8",
+      "c14667a55c9b822c55c3",
       "c34fbad9e8df98c440bd",
-      "c8f5863b08422a250f13"
+      "c8f5863b08422a250f13",
+      "e7bd391ecf7da14e4325",
+      "fd01e0e21528dc4cb4f9"
     ],
     "Vilankurichi": [
       "182ff0aad3ce3aebd8a0",
