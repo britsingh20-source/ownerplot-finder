@@ -58,6 +58,7 @@
     "Somayampalayam|direct_sources",
     "Sulur|direct_sources",
     "Thudiyalur|direct_sources",
+    "Thudiyalur|local_sites",
     "Thudiyalur|portals",
     "Thudiyalur|public_contacts",
     "Vadavalli|direct_sources",
@@ -74,21 +75,19 @@
     "locality": "Thudiyalur",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 7,
+    "public_contacts": 1,
     "sources": [
-      "99acres.com",
-      "magicbricks.com",
-      "olx.in",
-      "roofandfloor.com"
+      "adissia.com",
+      "echovalley.adissia.com"
     ],
-    "unique_listings": 16,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 26,
+  "scan_cursor": 27,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -328,6 +327,7 @@
       "9553a2b76fd95798cdc5",
       "9a2746995672cab59cee",
       "9dfbdf697481379ecf1f",
+      "9fa0db20797cad467d64",
       "bc8991549eca347a2775",
       "bd2c723ee4bd529fef6f",
       "ce718021cc203bca5e8c",
