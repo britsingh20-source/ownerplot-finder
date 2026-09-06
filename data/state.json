@@ -39,6 +39,7 @@
     "Ondipudur|direct_sources",
     "Othakalmandapam|direct_sources",
     "Pannimadai|direct_sources",
+    "Pannimadai|local_sites",
     "Pannimadai|portals",
     "Pannimadai|public_contacts",
     "Papampatti|direct_sources",
@@ -81,22 +82,25 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Pannimadai",
-    "probable_owners": 1,
+    "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 1,
+    "public_contacts": 2,
     "sources": [
       "99acres.com",
+      "facebook.com",
+      "housing.com",
+      "instagram.com",
       "magicbricks.com",
       "olx.in"
     ],
-    "unique_listings": 7,
-    "verified_original_dates": 0,
+    "unique_listings": 11,
+    "verified_original_dates": 1,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 35,
+  "scan_cursor": 36,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -267,12 +271,22 @@
     "Othakalmandapam": [],
     "Pannimadai": [
       "00dd5103611bf0b824cf",
+      "24271c3688a7d184dc47",
       "369621844bdf5171267b",
       "390edddccac62e493877",
       "3ec370049a974fc6abbc",
       "5e7b806abae9caa77bff",
+      "62fd3f7d997ed8ecc995",
+      "6a523ce3e747c5b529ba",
       "7a840f2a069fac5e3e7b",
-      "adf1e5fb861fd5c00ac6"
+      "9d14b6f5430cf734dea7",
+      "ad925ff0e23c84068b0c",
+      "adf1e5fb861fd5c00ac6",
+      "c30811f14949557ee557",
+      "d5ee0667ee16a1b59805",
+      "d8091d2d7a39084bbf6c",
+      "e10f147883d84f518fab",
+      "ef04e034ba11e3dd0e8a"
     ],
     "Papampatti": [],
     "Pattanam": [],
