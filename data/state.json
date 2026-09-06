@@ -14,6 +14,7 @@
     "Kalapatti|portals",
     "Kalapatti|public_contacts",
     "Karamadai|direct_sources",
+    "Karamadai|local_sites",
     "Karamadai|portals",
     "Karamadai|public_contacts",
     "Keeranatham|direct_sources",
@@ -84,23 +85,21 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Karamadai",
-    "probable_owners": 1,
+    "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
-    "public_contacts": 7,
+    "public_contacts": 1,
     "sources": [
-      "99acres.com",
-      "magicbricks.com",
-      "olx.in",
-      "property.sulekha.com"
+      "adissia.com",
+      "srisasthabuilders.com"
     ],
-    "unique_listings": 15,
+    "unique_listings": 2,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 38,
+  "scan_cursor": 39,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -194,6 +193,7 @@
       "72a9cfa79736590ce0da",
       "759482e7e64f8d13de0b",
       "7747c6c68cd7591ff96d",
+      "8137c96dd521adba0583",
       "887350946eb0fb9b77d6",
       "8a687cae16f26fd052fb",
       "8b089a6498a076335b5d",
