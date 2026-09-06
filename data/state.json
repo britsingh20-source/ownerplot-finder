@@ -39,6 +39,7 @@
     "Ondipudur|direct_sources",
     "Othakalmandapam|direct_sources",
     "Pannimadai|direct_sources",
+    "Pannimadai|portals",
     "Pannimadai|public_contacts",
     "Papampatti|direct_sources",
     "Pattanam|direct_sources",
@@ -80,20 +81,22 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Pannimadai",
-    "probable_owners": 0,
+    "probable_owners": 1,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 0,
+    "public_contacts": 1,
     "sources": [
-      "facebook.com"
+      "99acres.com",
+      "magicbricks.com",
+      "olx.in"
     ],
-    "unique_listings": 1,
+    "unique_listings": 7,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 34,
+  "scan_cursor": 35,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -263,7 +266,13 @@
     "Ondipudur": [],
     "Othakalmandapam": [],
     "Pannimadai": [
-      "7a840f2a069fac5e3e7b"
+      "00dd5103611bf0b824cf",
+      "369621844bdf5171267b",
+      "390edddccac62e493877",
+      "3ec370049a974fc6abbc",
+      "5e7b806abae9caa77bff",
+      "7a840f2a069fac5e3e7b",
+      "adf1e5fb861fd5c00ac6"
     ],
     "Papampatti": [],
     "Pattanam": [],
