@@ -66,6 +66,7 @@
     "Singanallur|direct_sources",
     "Somayampalayam|direct_sources",
     "Sulur|direct_sources",
+    "Sulur|public_contacts",
     "Thudiyalur|direct_sources",
     "Thudiyalur|local_sites",
     "Thudiyalur|portals",
@@ -84,22 +85,23 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Karamadai",
-    "probable_owners": 0,
+    "locality": "Sulur",
+    "probable_owners": 6,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 10,
     "sources": [
-      "adissia.com",
-      "srisasthabuilders.com"
+      "facebook.com",
+      "instagram.com",
+      "youtube.com"
     ],
-    "unique_listings": 2,
+    "unique_listings": 11,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 39,
+  "scan_cursor": 40,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -387,7 +389,19 @@
     ],
     "Singanallur": [],
     "Somayampalayam": [],
-    "Sulur": [],
+    "Sulur": [
+      "123b92d775d78e45ba8c",
+      "1566e7d798d0f611e8d5",
+      "51b5f3d17669c2512af8",
+      "82b3bb3cfc1c18df51d5",
+      "9486e90b92f438cf642e",
+      "a26573d5a95a4f563c17",
+      "a7b3aba965a999eebb65",
+      "b537519894d47b390351",
+      "c89fef11a1c0466503c8",
+      "d917e71c4cae439abe65",
+      "ea86301173881e2fe1af"
+    ],
     "Thudiyalur": [
       "038aee9ca78f1c6aa393",
       "04f9ac4f0d11bd92d56f",
