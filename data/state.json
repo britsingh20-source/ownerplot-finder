@@ -14,6 +14,7 @@
     "Kalapatti|portals",
     "Kalapatti|public_contacts",
     "Karamadai|direct_sources",
+    "Karamadai|public_contacts",
     "Keeranatham|direct_sources",
     "Kinathukadavu|direct_sources",
     "Kovaipudur|direct_sources",
@@ -81,26 +82,22 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Pannimadai",
-    "probable_owners": 0,
+    "locality": "Karamadai",
+    "probable_owners": 8,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 2,
+    "public_contacts": 12,
     "sources": [
-      "99acres.com",
-      "facebook.com",
-      "housing.com",
       "instagram.com",
-      "magicbricks.com",
-      "olx.in"
+      "youtube.com"
     ],
-    "unique_listings": 11,
-    "verified_original_dates": 1,
+    "unique_listings": 13,
+    "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 36,
+  "scan_cursor": 37,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -180,7 +177,21 @@
       "fa95692a5ace63875586",
       "fea34170d3aefa0d99d8"
     ],
-    "Karamadai": [],
+    "Karamadai": [
+      "07e9d6ee43a0dc9a6941",
+      "11f092a9efd14e4ff5f9",
+      "33948333a9a3d0f957eb",
+      "3f8ba15787b8257e9dbc",
+      "46177f076af57b3a783c",
+      "507d04f3209bc6ec64f9",
+      "72a9cfa79736590ce0da",
+      "887350946eb0fb9b77d6",
+      "99ca0bf3b9046b2bd9db",
+      "a58f6b643d5ab0e78715",
+      "b4cb7386d6b45ac6e9fc",
+      "d7277f67662b60399a33",
+      "ea1da3bb3de7e5b7ab53"
+    ],
     "Keeranatham": [
       "221bcbde281b2c446db0",
       "756abe81e1ef91745f13"
