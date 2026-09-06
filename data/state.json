@@ -39,6 +39,7 @@
     "Ondipudur|direct_sources",
     "Othakalmandapam|direct_sources",
     "Pannimadai|direct_sources",
+    "Pannimadai|public_contacts",
     "Papampatti|direct_sources",
     "Pattanam|direct_sources",
     "Peelamedu|direct_sources",
@@ -78,22 +79,21 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "NGGO Colony",
+    "locality": "Pannimadai",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
-    "public_contacts": 1,
+    "public_contacts": 0,
     "sources": [
-      "adissia.com",
-      "srisasthabuilders.com"
+      "facebook.com"
     ],
-    "unique_listings": 2,
+    "unique_listings": 1,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 33,
+  "scan_cursor": 34,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -262,7 +262,9 @@
     ],
     "Ondipudur": [],
     "Othakalmandapam": [],
-    "Pannimadai": [],
+    "Pannimadai": [
+      "7a840f2a069fac5e3e7b"
+    ],
     "Papampatti": [],
     "Pattanam": [],
     "Peelamedu": [
