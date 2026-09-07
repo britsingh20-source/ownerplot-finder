@@ -66,6 +66,7 @@
     "Singanallur|direct_sources",
     "Somayampalayam|direct_sources",
     "Sulur|direct_sources",
+    "Sulur|portals",
     "Sulur|public_contacts",
     "Thudiyalur|direct_sources",
     "Thudiyalur|local_sites",
@@ -86,22 +87,23 @@
   "last_run": {
     "freshness_days": 90,
     "locality": "Sulur",
-    "probable_owners": 6,
+    "probable_owners": 1,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
-    "public_contacts": 10,
+    "public_contacts": 2,
     "sources": [
-      "facebook.com",
-      "instagram.com",
-      "youtube.com"
+      "99acres.com",
+      "magicbricks.com",
+      "olx.in",
+      "quikr.com"
     ],
     "unique_listings": 11,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 40,
+  "scan_cursor": 41,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -390,15 +392,25 @@
     "Singanallur": [],
     "Somayampalayam": [],
     "Sulur": [
+      "03c3ffca7c5efa878b3a",
       "123b92d775d78e45ba8c",
       "1566e7d798d0f611e8d5",
+      "2183e80e92c917e34c61",
       "51b5f3d17669c2512af8",
+      "671cf45f36ca1c00f88c",
+      "7f8c5f55b36cfc849ac5",
       "82b3bb3cfc1c18df51d5",
+      "83fdabffed5ba775bb84",
       "9486e90b92f438cf642e",
+      "94aa47f73928b021c6ba",
+      "96560f9ff9993297a029",
       "a26573d5a95a4f563c17",
       "a7b3aba965a999eebb65",
       "b537519894d47b390351",
+      "c03738d67e973f429ac4",
+      "c361a436fa2ac2ea8f04",
       "c89fef11a1c0466503c8",
+      "cfcfa360bd52ce8f6783",
       "d917e71c4cae439abe65",
       "ea86301173881e2fe1af"
     ],
