@@ -9,6 +9,7 @@
     "Eachanari|direct_sources",
     "Ganapathy|direct_sources",
     "Irugur|direct_sources",
+    "Irugur|portals",
     "Irugur|public_contacts",
     "Kalapatti|direct_sources",
     "Kalapatti|local_sites",
@@ -91,7 +92,7 @@
     "locality": "Irugur",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -100,7 +101,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 43,
+  "scan_cursor": 44,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
