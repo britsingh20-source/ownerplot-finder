@@ -9,6 +9,7 @@
     "Eachanari|direct_sources",
     "Ganapathy|direct_sources",
     "Irugur|direct_sources",
+    "Irugur|public_contacts",
     "Kalapatti|direct_sources",
     "Kalapatti|local_sites",
     "Kalapatti|portals",
@@ -87,21 +88,19 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Sulur",
+    "locality": "Irugur",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
-    "sources": [
-      "adissia.com"
-    ],
-    "unique_listings": 1,
+    "sources": [],
+    "unique_listings": 0,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 42,
+  "scan_cursor": 43,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
