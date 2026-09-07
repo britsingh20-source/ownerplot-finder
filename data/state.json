@@ -67,6 +67,7 @@
     "Saravanampatti|portals",
     "Saravanampatti|public_contacts",
     "Singanallur|direct_sources",
+    "Singanallur|public_contacts",
     "Somayampalayam|direct_sources",
     "Sulur|direct_sources",
     "Sulur|local_sites",
@@ -90,10 +91,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Irugur",
+    "locality": "Singanallur",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -102,7 +103,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 45,
+  "scan_cursor": 46,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
