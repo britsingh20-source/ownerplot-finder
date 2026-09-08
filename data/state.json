@@ -43,6 +43,7 @@
     "Nehru Nagar|portals",
     "Nehru Nagar|public_contacts",
     "Ondipudur|direct_sources",
+    "Ondipudur|portals",
     "Ondipudur|public_contacts",
     "Othakalmandapam|direct_sources",
     "Pannimadai|direct_sources",
@@ -97,7 +98,7 @@
     "locality": "Ondipudur",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -106,7 +107,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 49,
+  "scan_cursor": 50,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
