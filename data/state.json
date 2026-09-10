@@ -58,6 +58,7 @@
     "Pannimadai|portals",
     "Pannimadai|public_contacts",
     "Papampatti|direct_sources",
+    "Papampatti|public_contacts",
     "Pattanam|direct_sources",
     "Pattanam|local_sites",
     "Pattanam|portals",
@@ -105,10 +106,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Othakalmandapam",
+    "locality": "Papampatti",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -117,7 +118,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 60,
+  "scan_cursor": 61,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
