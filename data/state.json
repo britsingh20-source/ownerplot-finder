@@ -58,6 +58,7 @@
     "Pannimadai|portals",
     "Pannimadai|public_contacts",
     "Papampatti|direct_sources",
+    "Papampatti|portals",
     "Papampatti|public_contacts",
     "Pattanam|direct_sources",
     "Pattanam|local_sites",
@@ -109,7 +110,7 @@
     "locality": "Papampatti",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -118,7 +119,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 61,
+  "scan_cursor": 62,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
