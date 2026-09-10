@@ -50,6 +50,7 @@
     "Ondipudur|portals",
     "Ondipudur|public_contacts",
     "Othakalmandapam|direct_sources",
+    "Othakalmandapam|portals",
     "Othakalmandapam|public_contacts",
     "Pannimadai|direct_sources",
     "Pannimadai|local_sites",
@@ -106,7 +107,7 @@
     "locality": "Othakalmandapam",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -115,7 +116,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 58,
+  "scan_cursor": 59,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
