@@ -99,6 +99,7 @@
     "Thudiyalur|public_contacts",
     "Vadavalli|direct_sources",
     "Veerappandi|direct_sources",
+    "Veerappandi|local_sites",
     "Veerappandi|portals",
     "Veerappandi|public_contacts",
     "Vellakinar|direct_sources",
@@ -116,7 +117,7 @@
     "locality": "Veerappandi",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -125,7 +126,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 68,
+  "scan_cursor": 69,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
