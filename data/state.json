@@ -37,6 +37,7 @@
     "NGGO Colony|portals",
     "NGGO Colony|public_contacts",
     "Nadupalayam|direct_sources",
+    "Nadupalayam|local_sites",
     "Nadupalayam|portals",
     "Nadupalayam|public_contacts",
     "Neelambur|direct_sources",
@@ -113,7 +114,7 @@
     "locality": "Nadupalayam",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -122,7 +123,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 65,
+  "scan_cursor": 66,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
