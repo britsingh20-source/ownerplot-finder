@@ -83,6 +83,7 @@
     "SITRA|portals",
     "SITRA|public_contacts",
     "Saibaba Colony|direct_sources",
+    "Saibaba Colony|local_sites",
     "Saibaba Colony|portals",
     "Saibaba Colony|public_contacts",
     "Saravanampatti|direct_sources",
@@ -122,7 +123,7 @@
     "locality": "Saibaba Colony",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -131,7 +132,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 74,
+  "scan_cursor": 75,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
