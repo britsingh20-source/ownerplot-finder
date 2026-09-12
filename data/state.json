@@ -83,6 +83,7 @@
     "SITRA|portals",
     "SITRA|public_contacts",
     "Saibaba Colony|direct_sources",
+    "Saibaba Colony|public_contacts",
     "Saravanampatti|direct_sources",
     "Saravanampatti|local_sites",
     "Saravanampatti|portals",
@@ -117,10 +118,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Ganapathy",
+    "locality": "Saibaba Colony",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -129,7 +130,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 72,
+  "scan_cursor": 73,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
