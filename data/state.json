@@ -8,6 +8,7 @@
     "Civil Aerodrome|public_contacts",
     "Eachanari|direct_sources",
     "Ganapathy|direct_sources",
+    "Ganapathy|portals",
     "Ganapathy|public_contacts",
     "Irugur|direct_sources",
     "Irugur|local_sites",
@@ -118,7 +119,7 @@
     "locality": "Ganapathy",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -127,7 +128,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 70,
+  "scan_cursor": 71,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
