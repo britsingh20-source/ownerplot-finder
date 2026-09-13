@@ -81,6 +81,7 @@
     "RS Puram|portals",
     "RS Puram|public_contacts",
     "Race Course|direct_sources",
+    "Race Course|public_contacts",
     "SITRA|direct_sources",
     "SITRA|local_sites",
     "SITRA|portals",
@@ -123,10 +124,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "RS Puram",
+    "locality": "Race Course",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -135,7 +136,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 78,
+  "scan_cursor": 79,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
