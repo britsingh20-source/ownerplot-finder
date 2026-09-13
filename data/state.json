@@ -77,6 +77,7 @@
     "Peelamedu|public_contacts",
     "Perur|direct_sources",
     "RS Puram|direct_sources",
+    "RS Puram|local_sites",
     "RS Puram|portals",
     "RS Puram|public_contacts",
     "Race Course|direct_sources",
@@ -125,7 +126,7 @@
     "locality": "RS Puram",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -134,7 +135,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 77,
+  "scan_cursor": 78,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
