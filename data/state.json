@@ -26,6 +26,7 @@
     "Keeranatham|direct_sources",
     "Kinathukadavu|direct_sources",
     "Kovaipudur|direct_sources",
+    "Kovaipudur|portals",
     "Kovaipudur|public_contacts",
     "Kovilpalayam|direct_sources",
     "Kuniyamuthur|direct_sources",
@@ -130,7 +131,7 @@
     "locality": "Kovaipudur",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -139,7 +140,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 82,
+  "scan_cursor": 83,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
