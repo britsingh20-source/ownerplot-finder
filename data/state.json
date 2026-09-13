@@ -26,6 +26,7 @@
     "Keeranatham|direct_sources",
     "Kinathukadavu|direct_sources",
     "Kovaipudur|direct_sources",
+    "Kovaipudur|public_contacts",
     "Kovilpalayam|direct_sources",
     "Kuniyamuthur|direct_sources",
     "Kurumbapalayam|direct_sources",
@@ -126,10 +127,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Race Course",
+    "locality": "Kovaipudur",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -138,7 +139,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 81,
+  "scan_cursor": 82,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
