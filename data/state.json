@@ -31,6 +31,7 @@
     "Kovaipudur|public_contacts",
     "Kovilpalayam|direct_sources",
     "Kuniyamuthur|direct_sources",
+    "Kuniyamuthur|public_contacts",
     "Kurumbapalayam|direct_sources",
     "Kurumbapalayam|local_sites",
     "Kurumbapalayam|portals",
@@ -129,10 +130,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Kovaipudur",
+    "locality": "Kuniyamuthur",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -141,7 +142,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 84,
+  "scan_cursor": 85,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
