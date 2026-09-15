@@ -7,6 +7,7 @@
     "Civil Aerodrome|portals",
     "Civil Aerodrome|public_contacts",
     "Eachanari|direct_sources",
+    "Eachanari|portals",
     "Eachanari|public_contacts",
     "Ganapathy|direct_sources",
     "Ganapathy|local_sites",
@@ -139,16 +140,18 @@
     "locality": "Eachanari",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
-    "sources": [],
-    "unique_listings": 0,
+    "sources": [
+      "99acres.com"
+    ],
+    "unique_listings": 4,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 91,
+  "scan_cursor": 92,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -176,7 +179,12 @@
       "f5683dc0745625ad46dc",
       "fcc6103d8f633939268b"
     ],
-    "Eachanari": [],
+    "Eachanari": [
+      "1dd7dac160f27f5b9e05",
+      "39dd59571c0a257b5dd0",
+      "844d0d13dd4baebea8ae",
+      "c956a0e464e70441cd0e"
+    ],
     "Ganapathy": [],
     "Irugur": [],
     "Kalapatti": [
