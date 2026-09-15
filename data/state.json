@@ -7,6 +7,7 @@
     "Civil Aerodrome|portals",
     "Civil Aerodrome|public_contacts",
     "Eachanari|direct_sources",
+    "Eachanari|public_contacts",
     "Ganapathy|direct_sources",
     "Ganapathy|local_sites",
     "Ganapathy|portals",
@@ -135,10 +136,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Madukkarai",
+    "locality": "Eachanari",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -147,7 +148,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 90,
+  "scan_cursor": 91,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
