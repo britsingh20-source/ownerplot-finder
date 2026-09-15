@@ -39,6 +39,7 @@
     "Kurumbapalayam|portals",
     "Kurumbapalayam|public_contacts",
     "Madukkarai|direct_sources",
+    "Madukkarai|local_sites",
     "Madukkarai|portals",
     "Madukkarai|public_contacts",
     "Malumichampatti|direct_sources",
@@ -137,7 +138,7 @@
     "locality": "Madukkarai",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -146,7 +147,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 89,
+  "scan_cursor": 90,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -322,7 +323,9 @@
       "f4de52203dbf72d881e6"
     ],
     "Nadupalayam": [],
-    "Neelambur": [],
+    "Neelambur": [
+      "69b50981ef046c7aabe2"
+    ],
     "Nehru Nagar": [
       "186cef9c1fb6976dda16",
       "2c7911a5f773079ee7be",
