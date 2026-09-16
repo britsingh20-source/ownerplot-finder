@@ -46,6 +46,7 @@
     "Madukkarai|portals",
     "Madukkarai|public_contacts",
     "Malumichampatti|direct_sources",
+    "Malumichampatti|public_contacts",
     "Mettupalayam|direct_sources",
     "NGGO Colony|direct_sources",
     "NGGO Colony|local_sites",
@@ -138,10 +139,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Eachanari",
+    "locality": "Malumichampatti",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -150,7 +151,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 93,
+  "scan_cursor": 94,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
