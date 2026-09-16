@@ -28,6 +28,7 @@
     "Karamadai|public_contacts",
     "Keeranatham|direct_sources",
     "Kinathukadavu|direct_sources",
+    "Kinathukadavu|portals",
     "Kinathukadavu|public_contacts",
     "Kovaipudur|direct_sources",
     "Kovaipudur|local_sites",
@@ -145,16 +146,19 @@
     "locality": "Kinathukadavu",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
-    "sources": [],
-    "unique_listings": 0,
-    "verified_original_dates": 0,
+    "sources": [
+      "housing.com",
+      "magicbricks.com"
+    ],
+    "unique_listings": 5,
+    "verified_original_dates": 3,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 97,
+  "scan_cursor": 98,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -274,7 +278,13 @@
       "221bcbde281b2c446db0",
       "756abe81e1ef91745f13"
     ],
-    "Kinathukadavu": [],
+    "Kinathukadavu": [
+      "3aea5251ae73648b2b94",
+      "50cc83c5de7cdf309d25",
+      "76c12188cee69a0bf546",
+      "7f29eee8a697b2e5a30d",
+      "cf2652708d4be254321c"
+    ],
     "Kovaipudur": [],
     "Kovilpalayam": [
       "5921ceb74303df27bed3"
