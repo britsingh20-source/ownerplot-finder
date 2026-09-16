@@ -46,6 +46,7 @@
     "Madukkarai|portals",
     "Madukkarai|public_contacts",
     "Malumichampatti|direct_sources",
+    "Malumichampatti|local_sites",
     "Malumichampatti|portals",
     "Malumichampatti|public_contacts",
     "Mettupalayam|direct_sources",
@@ -143,7 +144,7 @@
     "locality": "Malumichampatti",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -152,7 +153,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 95,
+  "scan_cursor": 96,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
