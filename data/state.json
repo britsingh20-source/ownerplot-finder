@@ -28,6 +28,7 @@
     "Karamadai|public_contacts",
     "Keeranatham|direct_sources",
     "Kinathukadavu|direct_sources",
+    "Kinathukadavu|public_contacts",
     "Kovaipudur|direct_sources",
     "Kovaipudur|local_sites",
     "Kovaipudur|portals",
@@ -141,10 +142,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Malumichampatti",
+    "locality": "Kinathukadavu",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -153,7 +154,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 96,
+  "scan_cursor": 97,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
