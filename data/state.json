@@ -94,6 +94,7 @@
     "Peelamedu|portals",
     "Peelamedu|public_contacts",
     "Perur|direct_sources",
+    "Perur|public_contacts",
     "RS Puram|direct_sources",
     "RS Puram|local_sites",
     "RS Puram|portals",
@@ -144,21 +145,19 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Kinathukadavu",
+    "locality": "Perur",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
-    "sources": [
-      "youtube.com"
-    ],
-    "unique_listings": 1,
+    "sources": [],
+    "unique_listings": 0,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 99,
+  "scan_cursor": 100,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
