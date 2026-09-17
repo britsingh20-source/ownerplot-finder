@@ -94,6 +94,7 @@
     "Peelamedu|portals",
     "Peelamedu|public_contacts",
     "Perur|direct_sources",
+    "Perur|local_sites",
     "Perur|portals",
     "Perur|public_contacts",
     "RS Puram|direct_sources",
@@ -149,16 +150,18 @@
     "locality": "Perur",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
-    "sources": [],
-    "unique_listings": 0,
+    "sources": [
+      "youtube.com"
+    ],
+    "unique_listings": 1,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 101,
+  "scan_cursor": 102,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -413,7 +416,9 @@
       "ed391b76c8ce768442d3",
       "eff87716f6d66d7882b7"
     ],
-    "Perur": [],
+    "Perur": [
+      "f8927acb08c389d91823"
+    ],
     "RS Puram": [],
     "Race Course": [],
     "SITRA": [
