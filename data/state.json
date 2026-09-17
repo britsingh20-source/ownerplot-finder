@@ -131,6 +131,7 @@
     "Thudiyalur|portals",
     "Thudiyalur|public_contacts",
     "Vadavalli|direct_sources",
+    "Vadavalli|public_contacts",
     "Veerappandi|direct_sources",
     "Veerappandi|local_sites",
     "Veerappandi|portals",
@@ -147,21 +148,19 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Perur",
+    "locality": "Vadavalli",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
-    "sources": [
-      "youtube.com"
-    ],
-    "unique_listings": 1,
+    "sources": [],
+    "unique_listings": 0,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 102,
+  "scan_cursor": 103,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
