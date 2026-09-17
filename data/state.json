@@ -94,6 +94,7 @@
     "Peelamedu|portals",
     "Peelamedu|public_contacts",
     "Perur|direct_sources",
+    "Perur|portals",
     "Perur|public_contacts",
     "RS Puram|direct_sources",
     "RS Puram|local_sites",
@@ -148,7 +149,7 @@
     "locality": "Perur",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -157,7 +158,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 100,
+  "scan_cursor": 101,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
