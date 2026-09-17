@@ -131,6 +131,7 @@
     "Thudiyalur|portals",
     "Thudiyalur|public_contacts",
     "Vadavalli|direct_sources",
+    "Vadavalli|portals",
     "Vadavalli|public_contacts",
     "Veerappandi|direct_sources",
     "Veerappandi|local_sites",
@@ -151,16 +152,18 @@
     "locality": "Vadavalli",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
-    "sources": [],
-    "unique_listings": 0,
-    "verified_original_dates": 0,
+    "sources": [
+      "youtube.com"
+    ],
+    "unique_listings": 1,
+    "verified_original_dates": 1,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 103,
+  "scan_cursor": 104,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -517,7 +520,9 @@
       "ec1a8299807c4ec3ed4f",
       "f07970ba7fa8e4ed5c24"
     ],
-    "Vadavalli": [],
+    "Vadavalli": [
+      "44c6c07c4e890e66da3b"
+    ],
     "Veerappandi": [],
     "Vellakinar": [
       "04e9563fefbb070d8b94",
