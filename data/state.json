@@ -122,6 +122,7 @@
     "Singanallur|portals",
     "Singanallur|public_contacts",
     "Somayampalayam|direct_sources",
+    "Somayampalayam|public_contacts",
     "Sulur|direct_sources",
     "Sulur|local_sites",
     "Sulur|portals",
@@ -150,19 +151,21 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Vadavalli",
+    "locality": "Somayampalayam",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
-    "sources": [],
-    "unique_listings": 0,
-    "verified_original_dates": 0,
+    "sources": [
+      "youtube.com"
+    ],
+    "unique_listings": 1,
+    "verified_original_dates": 1,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 105,
+  "scan_cursor": 106,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -464,7 +467,9 @@
       "ffb33a3e1186ca5591d6"
     ],
     "Singanallur": [],
-    "Somayampalayam": [],
+    "Somayampalayam": [
+      "9ec5e0175988eeba3b85"
+    ],
     "Sulur": [
       "03c3ffca7c5efa878b3a",
       "123b92d775d78e45ba8c",
