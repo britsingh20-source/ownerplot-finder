@@ -122,6 +122,7 @@
     "Singanallur|portals",
     "Singanallur|public_contacts",
     "Somayampalayam|direct_sources",
+    "Somayampalayam|local_sites",
     "Somayampalayam|portals",
     "Somayampalayam|public_contacts",
     "Sulur|direct_sources",
@@ -155,7 +156,7 @@
     "locality": "Somayampalayam",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -164,7 +165,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 107,
+  "scan_cursor": 108,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
