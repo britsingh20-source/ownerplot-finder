@@ -42,6 +42,7 @@
     "Kovaipudur|portals",
     "Kovaipudur|public_contacts",
     "Kovilpalayam|direct_sources",
+    "Kovilpalayam|local_sites",
     "Kovilpalayam|portals",
     "Kovilpalayam|public_contacts",
     "Kuniyamuthur|direct_sources",
@@ -164,7 +165,7 @@
     "locality": "Kovilpalayam",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -173,7 +174,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 116,
+  "scan_cursor": 117,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
