@@ -30,6 +30,7 @@
     "Karamadai|portals",
     "Karamadai|public_contacts",
     "Keeranatham|direct_sources",
+    "Keeranatham|portals",
     "Keeranatham|public_contacts",
     "Kinathukadavu|direct_sources",
     "Kinathukadavu|local_sites",
@@ -160,7 +161,7 @@
     "locality": "Keeranatham",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -169,7 +170,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 112,
+  "scan_cursor": 113,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
