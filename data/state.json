@@ -1,6 +1,7 @@
 {
   "baselined": [
     "Annur|direct_sources",
+    "Annur|public_contacts",
     "Chinnavedampatti|direct_sources",
     "Chinnavedampatti|local_sites",
     "Chinnavedampatti|portals",
@@ -162,10 +163,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "Kovilpalayam",
+    "locality": "Annur",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -174,7 +175,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 117,
+  "scan_cursor": 118,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
