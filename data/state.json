@@ -65,6 +65,7 @@
     "Malumichampatti|portals",
     "Malumichampatti|public_contacts",
     "Mettupalayam|direct_sources",
+    "Mettupalayam|portals",
     "Mettupalayam|public_contacts",
     "NGGO Colony|direct_sources",
     "NGGO Colony|local_sites",
@@ -169,7 +170,7 @@
     "locality": "Mettupalayam",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -178,7 +179,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 121,
+  "scan_cursor": 122,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
