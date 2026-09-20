@@ -1,6 +1,7 @@
 {
   "baselined": [
     "Annur|direct_sources",
+    "Annur|local_sites",
     "Annur|portals",
     "Annur|public_contacts",
     "Chinnavedampatti|direct_sources",
@@ -167,7 +168,7 @@
     "locality": "Annur",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -176,7 +177,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 119,
+  "scan_cursor": 120,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
