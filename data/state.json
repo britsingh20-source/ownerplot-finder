@@ -171,7 +171,7 @@
     "locality": "Vilankurichi",
     "probable_owners": 0,
     "profiles": [
-      "public_contacts"
+      "portals"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -180,7 +180,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 7,
+  "scan_cursor": 8,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -332,6 +332,7 @@
       "ba44c9627b565950f4e0",
       "c56306502dd8bba799c0",
       "c5befa08360010b4d645",
+      "c89ada802deef09c89a0",
       "c8ddb4103751a5d52a4f",
       "e96e2cde0fbb0b841f9d",
       "efefe29eeeeee4a03989"
