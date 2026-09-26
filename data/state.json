@@ -171,18 +171,16 @@
     "locality": "Thudiyalur",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
-    "sources": [
-      "housing.com"
-    ],
-    "unique_listings": 1,
-    "verified_original_dates": 1,
+    "sources": [],
+    "unique_listings": 0,
+    "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 26,
+  "scan_cursor": 27,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
