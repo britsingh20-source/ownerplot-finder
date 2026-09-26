@@ -171,18 +171,16 @@
     "locality": "Vellakinar",
     "probable_owners": 0,
     "profiles": [
-      "portals"
+      "local_sites"
     ],
     "public_contacts": 0,
-    "sources": [
-      "99acres.com"
-    ],
-    "unique_listings": 2,
+    "sources": [],
+    "unique_listings": 0,
     "verified_original_dates": 0,
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 29,
+  "scan_cursor": 30,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
