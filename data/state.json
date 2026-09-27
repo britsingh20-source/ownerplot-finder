@@ -168,10 +168,10 @@
   "initialized": true,
   "last_run": {
     "freshness_days": 90,
-    "locality": "NGGO Colony",
+    "locality": "Pannimadai",
     "probable_owners": 0,
     "profiles": [
-      "local_sites"
+      "public_contacts"
     ],
     "public_contacts": 0,
     "sources": [],
@@ -180,7 +180,7 @@
     "verified_owners": 0
   },
   "locality_cursor": 0,
-  "scan_cursor": 33,
+  "scan_cursor": 34,
   "seen": {
     "Annur": [
       "d06773ec81b08db5f760"
@@ -439,7 +439,9 @@
     "Perur": [
       "f8927acb08c389d91823"
     ],
-    "RS Puram": [],
+    "RS Puram": [
+      "ef8ceb47e2e4467263c6"
+    ],
     "Race Course": [],
     "SITRA": [
       "154b00a2b9737e1e21ec",
